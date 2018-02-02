@@ -33,6 +33,12 @@ function _browserSync() {
     });
 }
 
+gulp.task('copy', function () {
+	    gulp.src('./node_modules/bootstrap/dist/css/*')
+	        .pipe(gulp.dest('./client/app/css/'));
+});
+
+
 gulp.task('sass', function () {
 
   return gulp.src([
@@ -61,7 +67,7 @@ function callback(err,msg){
 }
 
 
-gulp.task('default', function(){
+gulp.task('default', ['copy', 'sass'], function(){
 
 	_browserSync();
 	gulp.watch("./client/app/sass/**.scss", ['sass']);
