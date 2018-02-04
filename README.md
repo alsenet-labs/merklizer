@@ -26,7 +26,7 @@ Web app for computing Merkle trees and anchoring hashes to the open public block
 
 The actual demo is hashing files using SHA512-256, building a Merkle
 tree from those hashes and anchoring the Merkle root directly to
-the Ethereum blockchain (using the MetaMask browser extension).
+the Ethereum blockchain (using the MetaMask [https://metamask.io/] browser extension).
 
 After the blockchain transaction appears on the blockchain, it allows
 you to download a zip archive containing all the Merkle proofs and the
@@ -38,7 +38,9 @@ Provisions are made to allow anchoring data on other blockchains.
 
 ## Quickstart
 
+```
  git clone https://github.com/alsenet-labs/merlizer
  cd merklizer
  yarn
  gulp
+```
