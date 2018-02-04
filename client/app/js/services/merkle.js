@@ -24,7 +24,7 @@
 
 var js_sha512=require('js-sha512');
 var sha512_256=js_sha512.sha512_256;
-
+var Q=require('q');
 
 module.exports = [
   function(
@@ -41,6 +41,14 @@ module.exports = [
         SHA512_256: function hash(data){
           return new Uint8Array(sha512_256.arrayBuffer(data));
         }
+        /*
+        // TODO: using crypto promises should be faster but requires too much refactoring for now
+        SHA512_trunc: function hash(data){
+          $window.crypto.subtle.digest('SHA-512',data).then(function(a){
+            return new Uint8Array(a.slice(0,32));
+          });
+        }
+        */
       },
 
       hash: function hash(data){

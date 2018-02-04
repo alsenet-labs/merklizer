@@ -21,11 +21,53 @@
 */
 
 'use strict';
-module.exports = [
-	'$scope',
-	function(
-		$scope
-	) {
-		console.log(this);
-	}
-]
+
+/**
+ * @ngdoc function
+ * @name merkleApp.controller:MainCtrl
+ * @description
+ * # MainCtrl
+ * Controller of the merkleApp
+ */
+
+module.exports=[
+  '$scope',
+  '$rootScope',
+  '$timeout',
+  'processing',
+  function (
+    $scope,
+    $rootScope,
+    $timeout,
+    processing
+  ) {
+    this.awesomeThings = [
+      'HTML5 Boilerplate',
+      'AngularJS',
+      'Karma'
+    ];
+
+    angular.extend($scope,{
+
+      loaded: function(){
+        $timeout(function(){
+          $scope.isLoaded=true;
+        },3000);
+      }, // loaded
+
+      init: function(){
+
+        $scope.$on('processFiles',function(event,queue){
+          setTimeout(function(){
+            processing.processFiles(queue);
+          });
+        });
+
+      } // init
+
+    }); // extend scope
+
+    $scope.init();
+  }
+
+];

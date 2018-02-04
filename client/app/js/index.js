@@ -35,20 +35,22 @@ require('angular-ui-bootstrap');
 require('angular-files-drop');
 require('angular-smart-table');
 require('angular-file-saver');
-require('ng-notify');
-window.JSZip=require('jszip');
 
 var app=angular.module('merkleApp',[
   'ui.router',
   'ui.bootstrap',
   'angular-files-drop',
   'smart-table',
-  'ngNotify',
   'ngFileSaver'
 ])
 .config(require('./config.js'))
 .service('merkle',require('./services/merkle.js'))
 .service('tierion',require('./services/tierion.js'))
+.service('ethService',require('./services/eth.js'))
+.service('processing',require('./services/processing.js'))
 .directive('onChange',require('./directives/on-change.js'))
+.directive('onLoad',require('./directives/on-load.js'))
 .controller('MainCtrl',require('./controllers/main.js'))
 .controller('FilesCtrl',require('./controllers/files.js'))
+.controller('OverlayCtrl',require('./controllers/overlay.js'))
+.filter('prettyFileIcon',require('./filters/pretty-file-icon'))
