@@ -49,7 +49,6 @@ var app=angular.module('merkleApp',[
 .service('ethService',require('./services/eth.js'))
 .service('processing',require('./services/processing.js'))
 .directive('onChange',require('./directives/on-change.js'))
-.directive('onLoad',require('./directives/on-load.js'))
 .controller('MainCtrl',require('./controllers/main.js'))
 .controller('FilesCtrl',require('./controllers/files.js'))
 .controller('OverlayCtrl',require('./controllers/overlay.js'))
