@@ -24,28 +24,34 @@ var gulp = require('gulp');
 var sass = require('gulp-sass');
 var browserSync = require('browser-sync');
 var gutil = require('gulp-util');
+var runSequence = require('run-sequence');
+var merge = require('merge-stream');
 
-function _browserSync() {
-    browserSync.init(["client/app/css/bundle.css", "client/app/js/index.min.js"], {
+gulp.task('browserSync',function(){
+    browserSync.init(["client/app/css/bundle.css", "client/app/js/index.min.js","./client/app/index.html",'./client/app/views/**.html'], {
+			  watchOptions: {
+					ignoreInitial: true
+				},
         server: {
             baseDir: "./client/app/"
         }
     });
-}
+});
 
 gulp.task('copy', function () {
-      gulp.src('./node_modules/bootstrap/dist/css/*')
-          .pipe(gulp.dest('./client/app/css/'));
-
-      gulp.src('./node_modules/pretty-file-icons/svg/*')
-      .pipe(gulp.dest('./client/app/images'));
+   var streams=[];
+	 streams.push(gulp.src('./node_modules/bootstrap/dist/css/*')
+   .pipe(gulp.dest('./client/app/css/')));
+	 streams.push(gulp.src('./node_modules/pretty-file-icons/svg/*')
+   .pipe(gulp.dest('./client/app/images')));
+	 return merge.apply(null,streams);
 });
 
 
 gulp.task('sass', function () {
 
   return gulp.src([
-    './node_modules/font-awesome/scss/font-awesome.scss',
+    //'./node_modules/font-awesome/scss/font-awesome.scss',
     './client/app/sass/main.scss'
     ])
     .pipe(sass({
@@ -60,21 +66,27 @@ gulp.task('browserify', require('./gulptasks/browserify.js')({
   callback: callback
 }));
 
-gulp.task('watch', require('./gulptasks/browserify.js')({
+gulp.task('watchify', require('./gulptasks/browserify.js')({
   callback: callback,
   watch: true
 }));
+
+gulp.task('watch', function(){
+      return gulp.watch("./client/app/sass/**.scss", ['sass']);
+//      gulp.watch(["./client/app/index.html",'./client/app/views/**.html']).on ('change',browserSync.reload);
+});
 
 function callback(err,msg){
   if(err) throw err;
 }
 
+gulp.task('default', function() {
+	runSequence(
+		'copy',
+		'sass',
+		'watch',
+		'watchify',
+		'browserSync'
 
-gulp.task('default', ['copy', 'sass'], function(){
-
-  _browserSync();
-  gulp.watch("./client/app/sass/**.scss", ['sass']);
-  gulp.watch(["./client/app/index.html",'./client/app/views/**.html']).on ('change',browserSync.reload);
-  gulp.run('watch');
-
+	);
 });

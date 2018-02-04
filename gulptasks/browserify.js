@@ -48,7 +48,7 @@ module.exports=function(options){
 
   function compile(options){
 
-    glob('./client/app/js/index.js'/*,{ignore: './client/app/js/**.min.js'}*/,function(err,files){
+    return glob('./client/app/js/index.js'/*,{ignore: './client/app/js/**.min.js'}*/,function(err,files){
 
       if (err) return options.callback(err);
 
@@ -136,7 +136,7 @@ module.exports=function(options){
   }
 
   return function() {
-    compile(options)
+    return compile(options)
   }
 
 }
