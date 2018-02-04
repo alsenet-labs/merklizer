@@ -53,7 +53,7 @@ module.exports=function(options){
       if (err) return options.callback(err);
 
       var tasks=files.map(function(filename){
-  			var bundler = watchify(
+        var bundler = watchify(
           browserify({
             entries: [filename]
           },{
@@ -99,40 +99,40 @@ module.exports=function(options){
                 "browsers": ["last 2 versions", "safari >=7"]
               }
             }]],
-  					sourceMaps: true
-  			}));
+            sourceMaps: true
+        }));
 
-  			function rebundle(filename,bundler) {
-  					return bundler
-  							.bundle()
-  							.on('error', function (err) {
-  									console.error(err);
-  									this.emit('end');
-  							})
-  							.pipe(source('build.js'))
-  							.pipe(buffer())
-  							.pipe(rename(filename.replace(/\.js$/,'\.min.js')))
-  							.pipe(sourcemaps.init({loadMaps: true}))
-//  	            .pipe(uglify())
-  							.pipe(sourcemaps.write('./'))
-					      .pipe(debug({title: 'processed:'}))
-  							.pipe(gulp.dest('./'));
-  			}
+        function rebundle(filename,bundler) {
+            return bundler
+                .bundle()
+                .on('error', function (err) {
+                    console.error(err);
+                    this.emit('end');
+                })
+                .pipe(source('build.js'))
+                .pipe(buffer())
+                .pipe(rename(filename.replace(/\.js$/,'\.min.js')))
+                .pipe(sourcemaps.init({loadMaps: true}))
+//                .pipe(uglify())
+                .pipe(sourcemaps.write('./'))
+                .pipe(debug({title: 'processed:'}))
+                .pipe(gulp.dest('./'));
+        }
 
-  			if (options.watch) {
-  					bundler.on('update', function () {
-  							console.log('-> bundling '+filename+'...');
-  							rebundle(filename,bundler);
-  					});
-  			}
+        if (options.watch) {
+            bundler.on('update', function () {
+                console.log('-> bundling '+filename+'...');
+                rebundle(filename,bundler);
+            });
+        }
 
-  			return rebundle(filename,bundler);
+        return rebundle(filename,bundler);
 
-  		});
+      });
       if (!options.watch) {
-  			es.merge(tasks).on('end',options.callback);
+        es.merge(tasks).on('end',options.callback);
       }
-  	});
+    });
   }
 
   return function() {

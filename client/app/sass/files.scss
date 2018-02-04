@@ -1,48 +1,7 @@
 // @Author: guest
 // @Date:   2018-01-28T00:16:21+01:00
 // @Last modified by:   guest
-// @Last modified time: 2018-02-01T11:59:02+01:00
-
-.blur {
-  filter: blur(5px);
-  opacity: 0.5;
-}
-
-.overlay {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    filter: none;
-    > div {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      > div {
-        border: 1px solid gray;
-        border-radius: 5px;
-        padding: 20px;
-        background-color: rgba(255,255,255,0.1);
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-
-        progress {
-        	height: 15px;
-        	border: 0px none;
-        }
-
-        button {
-          margin-top: 10px;
-          width: 100%;
-        }
-
-      }
-    }
-    z-index: 1000;
-}
+// @Last modified time: 2018-02-04T06:43:07+01:00
 
 #merkle-files {
   .text-center {
@@ -65,15 +24,27 @@
       width: 100%;
       margin: 3em;
 
-      th {
-        .hash {
-          text-align: center;
-          width: 100%;
+      table {
+        th {
+          .hash {
+            text-align: center;
+            width: 100%;
+          }
         }
-      }
 
-      td.hash {
-        font-family: monospace;
+        td.hash {
+          font-family: monospace;
+        }
+
+        td img {
+          float: right;
+          width: 2em;
+        }
+
+        td {
+          vertical-align: middle;
+        }
+
       }
     }
 
@@ -210,7 +181,7 @@
   width: 100%;
   height: 100%;
   position: fixed;
-  border: dashed 0.5em #222;
+  border: dashed 0.5em #DDD;
   pointer-events: none;
 }
 

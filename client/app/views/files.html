@@ -1,26 +1,14 @@
-<div ng-controller="FilesCtrl" id="merkle-files" ng-cloak  files-read="false" files-drop="onFilesDropped($files, $event)">
+<div ng-cloak ng-controller="FilesCtrl" id="merkle-files" ng-cloak  files-read="false" files-drop="onFilesDropped($files, $event)">
 
-  <div ng-if="_showOverlay" class="overlay">
-    <div>
-      <div>
-        <div>
-          <div>Please wait...</div>
-          <div><progress max="{{progress.max}} value="{{progress.value}}"></progress></div>
-          <button onclick="window.location.reload()" class="btn btn-danger">Abort</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="dashes" ng-if="!$root._showOverlay"></div>
 
-  <div class="dashes" ng-if="!_showOverlay"></div>
-
-  <div class="row" ng-class="{blur: _showOverlay}">
+  <div class="row" ng-class="{blur: $root._showOverlay}">
 
     <div class="col-md-3">
 
       <h3>Select files</h3>
 
-      <label class="btn btn-primary btn-file">
+      <label type="button" class="btn btn-primary btn-file">
         <span class="fa fa-folder" ></span>  Browse...
         <input type="file" multiple accept="{{mimeTypes}}" style="display: none"  ng-model="selection" on-change="onFilesChanged" />
       </label>
@@ -32,12 +20,12 @@
       <h3 ng-if="queue.length">{{ queue.length }} file{{ queue.length>1 ? 's' : '' }} in queue ({{ queue.size/1024/1024|number:2 }}Mb)</h3>
 
       <div>
-          <button type="button" class="btn btn-s btn-primary" ng-click="computeMerkleTree()" ng-disabled="isRunning || !queue.length">
-            <span class="fa fa-download"></span> Download Proofs
-          </button>
-          <button type="button" class="btn btn-s btn-danger" ng-click="removeAll()" ng-disabled="!queue.length">
+          <div type="button" class="btn btn-s btn-primary" ng-click="process()" ng-disabled="isRunning || !queue.length">
+            <span class="fa fa-link"></span> Process Files
+          </div>
+          <div type="button" class="btn btn-s btn-danger" ng-click="removeAll()" ng-disabled="!queue.length">
             <span class="fa fa-trash"></span> Remove all
-          </button>
+          </div>
      </div>
     <!--div>
       <input id="toggleShowFileList" type="checkbox" ng-model="showFileList"><label for="toggleShowFileList">Show file list</label>
@@ -48,7 +36,9 @@
     <table ng-if="queue.length && showFileList" st-safe-src="queue" st-table="rows" class="table table-striped">
       <thead>
         <tr>
+          <th></th>
           <th>Name</th>
+          <th>Date</th>
           <th ng-show="isHTML5">Size</th>
           <th class="hash">Hash</th>
           <th></th>
@@ -56,25 +46,29 @@
       </thead>
       <tbody>
         <tr ng-repeat="item in rows" ng-class="{duplicate: item.duplicate}">
+          <td><img ng-src="{{ item.name | prettyFileIcon }}"></td>
           <td><strong>{{ item.name }}</strong></td>
+          <td>
+            {{ item.lastModifiedDate | date:'yyyy/MM/dd HH:mm:ss' }}
+          </td>
           <td ng-show="isHTML5" nowrap>{{ item.size/1024/1024|number:2 }} MB</td>
           <td class="hash" nowrap>
             {{ item.hash_str }}
           </td>
           <td nowrap>
-            <button type="button" class="btn btn-xs" ng-click="remove(item)">
+            <div type="button" class="btn btn-xs" ng-click="remove(item)">
               <span class="fa fa-trash"></span> Remove
-            </button>
+            </div>
           </td>
         </tr>
       </tbody>
-  		<tfoot>
-  			<tr>
-  				<td colspan="4" class="text-center">
-  					<div st-pagination="" st-items-by-page="itemsByPage" st-displayed-pages="7"></div>
-  				</td>
-  			</tr>
-  		</tfoot>
+      <tfoot>
+        <tr>
+          <td colspan="6" class="text-center">
+            <div st-pagination="" st-items-by-page="itemsByPage" st-displayed-pages="7"></div>
+          </td>
+        </tr>
+      </tfoot>
     </table>
   </div>
 

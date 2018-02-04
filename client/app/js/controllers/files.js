@@ -30,21 +30,24 @@
  * Controller of the merkleApp
  */
 
-
 module.exports=[
   '$scope',
+  '$rootScope',
   '$window',
+  '$timeout',
   '$q',
   'merkle',
   'tierion',
-  'FileSaver',
+  'ethService',
   function (
     $scope,
+    $rootScope,
     $window,
+    $timeout,
     $q,
     merkle,
     tierion,
-    FileSaver
+    ethService
   ) {
     this.awesomeThings = [
       'HTML5 Boilerplate',
@@ -53,8 +56,8 @@ module.exports=[
     ];
 
     angular.extend($scope,{
+      $rootScope: $rootScope,
       merkle: merkle,
-      _showOverlay: false,
       mimeTypes: '',
       isHTML5: true,
       queue: [],
@@ -65,14 +68,19 @@ module.exports=[
         value: 0
       },
       init: function() {
+
       }, // init
 
-      showOverlay: function() {
-        $scope._showOverlay=true;
+      process: function(){
+        $rootScope.$broadcast('processFiles',$scope.queue);
       },
 
-      hideOverlay: function() {
-        $scope._showOverlay=false;
+      showOverlay: function(options){
+        $rootScope.$broadcast('showOverlay',options);
+      },
+
+      hideOverlay: function(){
+        $rootScope.$broadcast('hideOverlay');
       },
 
       removeDuplicates: function(){
@@ -103,12 +111,12 @@ module.exports=[
         if (removedDuplicate) {
           $window.alert(removedDuplicate+" duplicate"+(removedDuplicate>1?'s':'')+" ignored !");
         }
-      },
+      }, // removeDuplicates
 
       onFilesDropped: function($files, $event) {
         $scope.progress.max=$files.length-1;
         $scope.progress.value=0;
-        $scope.showOverlay();
+        $scope.showOverlay('Adding files...');
         // reuse or initialize total size
         $scope.queue.size=$scope.queue.size||0;
         // update total size and store file
@@ -120,12 +128,13 @@ module.exports=[
         $scope.computeHashes($scope.queue)
         .then($scope.removeDuplicates)
         .finally($scope.hideOverlay);
-      },
+
+      }, // onFilesDropped
 
       onFilesChanged: function($event,files){
          $scope.onFilesDropped($event.target.files,$event)
          $scope.$apply();
-      },
+      }, // onFilesChanged
 
       remove: function(file){
         if ($window.confirm('Are you sure ?')) {
@@ -144,54 +153,6 @@ module.exports=[
           $scope.queue.splice(0,$scope.queue.length);
           $scope.queue.size=0;
         }
-      },
-
-      computeMerkleTree: function computeMerkleTree(){
-        $scope.showOverlay();
-        $scope.computeHashes($scope.queue)
-        .then(function(){
-          $scope.tree=merkle.compute($scope.queue);
-          /*
-          tierion.hashClient.submitHashItem(merkle.getRoot($scope.tree),function(err,receipt){
-            $scope.tree.receipt=receipt;
-            console.log(receipt);
-            if (err) {
-              console.log(err);
-              $window.alert('Error ! ',err.msg);
-            } else {
-              $scope.downloadArchive();
-            }
-          });
-
-          */
-          $scope.downloadArchive();
-          $scope.hideOverlay();
-
-        });
-      },
-
-      downloadArchive: function downloadArchive(){
-        var zip=new JSZip();
-        var folder=zip.folder(merkle.hashToString($scope.tree[0][0]));
-        var date=(new Date()).toISOString();
-        var output;
-        $scope.queue.forEach(function(file,i){
-          output=$.extend(true,{},file.proof,{
-            root: merkle.hashToString(file.proof.root),
-            hash: merkle.hashToString(file.proof.hash),
-            date: date
-          });
-          output.operations.some(function(op,i){
-            if (op.left) op.left=merkle.hashToString(op.left);
-            else if (op.right) op.right=merkle.hashToString(op.right);
-          });
-          folder.file(file.name+'.json',JSON.stringify(output,false,2));
-        });
-        zip.generateAsync({type:"blob"}).then(function(content) {
-          // see FileSaver.js
-          FileSaver.saveAs(content, "proofs-"+output.root+".zip");
-        });
-
       },
 
       /**

@@ -1,0 +1,83 @@
+/*
+* Copyright (c) 2018 ALSENET SA
+*
+* Author(s):
+*
+*      Luc Deschenaux <luc.deschenaux@freesurf.ch>
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+*
+* You should have received a copy of the GNU Affero General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
+
+'use strict';
+
+var config =require('../../../../config.eth.js');
+var Eth=require('ethjs');
+
+module.exports=[
+  '$q',
+  function($q){
+    var service=this;
+    var eth;
+
+    angular.extend(service,{
+
+      enabled: config.enabled,
+
+      network_description: {
+        1: 'This is mainnet',
+        2: 'This is the deprecated Morden test network.',
+        3: 'This is the ropsten test network.',
+        4: 'This is the Rinkeby test network.',
+        42: 'This is the Kovan test network.'
+      },
+
+      init: function(){
+        var provider;
+
+        if (!service.eth) {
+          if (config.provider)
+            provider=new Eth.HttpProvider(config.provider);
+          else if (typeof web3 !== 'undefined')
+            provider=web3.currentProvider;
+          else
+            provider=new Eth.HttpProvider('http://localhost:8545');
+
+          service.eth=new Eth(provider);
+        }
+        eth=service.eth;
+
+        return eth.accounts()
+        .then(function(accounts){
+          service.account=config.account||accounts[0];
+        })
+        .then(function(){
+          return eth.net_version()
+        })
+        .then(function(netId){
+          service.netId=netId;
+          console.log(service.network_description[netId]||'This is an unknown network.');
+        })
+        .catch(console.log);
+
+      } // init
+
+    }); // extend web3
+
+    if (service.enabled) {
+      service.promise=service.init();
+    }
+
+  }
+];

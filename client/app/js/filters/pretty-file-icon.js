@@ -20,13 +20,13 @@
 *
 */
 
-module.exports=(function(){
-  return {
-    enabled: false,
-    username: 'user@host',
-    password: 'password',
-    clientSecret: '0000000000000000000000000000000000000000',
-    dataStore: '0000',
-    dataStoreKey: '0000000000000000000000'
+'use strict';
+
+var prettyFileIcons=require('pretty-file-icons');
+module.exports=[
+  function(){
+    return function(filename) {
+      return '/images/'+prettyFileIcons.getIcon(filename)+'.svg';
+    }
   }
-})();
+];

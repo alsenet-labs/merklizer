@@ -34,8 +34,11 @@ function _browserSync() {
 }
 
 gulp.task('copy', function () {
-	    gulp.src('./node_modules/bootstrap/dist/css/*')
-	        .pipe(gulp.dest('./client/app/css/'));
+      gulp.src('./node_modules/bootstrap/dist/css/*')
+          .pipe(gulp.dest('./client/app/css/'));
+
+      gulp.src('./node_modules/pretty-file-icons/svg/*')
+      .pipe(gulp.dest('./client/app/images'));
 });
 
 
@@ -69,9 +72,9 @@ function callback(err,msg){
 
 gulp.task('default', ['copy', 'sass'], function(){
 
-	_browserSync();
-	gulp.watch("./client/app/sass/**.scss", ['sass']);
-	gulp.watch(["./client/app/index.html",'./client/app/views/**.html']).on ('change',browserSync.reload);
-	gulp.run('watch');
+  _browserSync();
+  gulp.watch("./client/app/sass/**.scss", ['sass']);
+  gulp.watch(["./client/app/index.html",'./client/app/views/**.html']).on ('change',browserSync.reload);
+  gulp.run('watch');
 
 });
