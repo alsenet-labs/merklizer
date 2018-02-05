@@ -179,7 +179,7 @@ module.exports = [
 
           function pushAnchor(anchor){
             if (!output.anchors){
-              output.anchors=[];
+              file.proof.anchors=output.anchors=(file.proof.anchors||[]);
             }
             output.anchors.push(anchor);
           }
