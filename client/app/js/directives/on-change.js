@@ -23,12 +23,20 @@
 "use strict";
 
 module.exports=[
-  function() {
+  '$parse',
+  function($parse) {
     return {
       restrict: 'A',
-      link: function (scope, element, attrs) {
-        var onChangeHandler = scope.$eval(attrs.onChange);
-        element.on('change', onChangeHandler);
+      link: function ($scope, element, $attrs) {
+        element.on('change', function(event){
+          $scope.$apply(function(){
+            $parse($attrs.onChange)($scope, {$event:event});
+            if (element[0].type=='file') {
+              // reset value so that selecting the same file will trigger the event again
+              element[0].value='';
+            }
+          });
+        });
         element.on('$destroy', function() {
           element.off();
         });

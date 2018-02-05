@@ -34,6 +34,7 @@ module.exports = [
     angular.extend(merkle,{
       mask: 0xfffe,
       debug: true,
+      version: '1.0.0',
 
       hashType: 'SHA512_256',
 
@@ -56,6 +57,10 @@ module.exports = [
       },
 
       hashToString: function hashToString(hash){
+        if (typeof hash == 'string') {
+          console.log('hash is already a string');
+          return hash;
+        }
         return Array.prototype.slice.call(hash)
         .map(function(i) {
           return (i&0xf0?'':'0')+(Number(i).toString(16));
@@ -63,12 +68,18 @@ module.exports = [
       },
 
       stringToHash: function stringToHash(hash_str){
+        if (typeof hash_str != 'string') {
+          console.log('hash is not a string');
+          return hash;
+        }
         return new Uint8Array(hash_str.match(/.{2}/g).map(function(byte){
           return parseInt(byte,16);
         }));
       },
 
       hashMerge: function hashMerge(hashLeft,hashRight,hashType){
+        if (typeof(hashLeft)=='string') hashLeft=merkle.stringToHash(hashLeft);
+        if (typeof(hashRight)=='string') hashRight=merkle.stringToHash(hashRight);
         var result=new Uint8Array(hashLeft.byteLength+hashRight.byteLength);
         result.set(hashLeft,0);
         result.set(hashRight,hashLeft.byteLength);
@@ -124,6 +135,7 @@ module.exports = [
           var j=i;
 
           elem.proof={
+            merklizerVersion: merkle.version,
             hashType: merkle.hashType,
             hash: elem.hash,
             root: tree[0][0].hash,

@@ -131,9 +131,8 @@ module.exports=[
 
       }, // onFilesDropped
 
-      onFilesChanged: function($event,files){
-         $scope.onFilesDropped($event.target.files,$event)
-         $scope.$apply();
+      onFilesChanged: function($event){
+         $scope.onFilesDropped($event.target.files,$event);
       }, // onFilesChanged
 
       remove: function(file){
