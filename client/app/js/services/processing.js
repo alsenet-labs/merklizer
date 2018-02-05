@@ -235,6 +235,8 @@ module.exports = [
         if (merkle.hashToString(file.proof.hash)!=merkle.hashToString(file.hash)) {
           console.log('hash mismatch !');
           $window.alert('Hash mismatch between file and proof !');
+          console.log(proof);
+          delete file.proof;
           return false;
         }
 
