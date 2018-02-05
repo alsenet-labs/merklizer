@@ -51,28 +51,28 @@ module.exports = [
       init: function(){
       }, // init
 
-			showOverlay: function(options){
-				$rootScope.$broadcast('showOverlay',options);
-			},
+      showOverlay: function(options){
+        $rootScope.$broadcast('showOverlay',options);
+      },
 
-			hideOverlay: function(){
-				$rootScope.$broadcast('hideOverlay');
-			},
+      hideOverlay: function(){
+        $rootScope.$broadcast('hideOverlay');
+      },
 
       processFiles: function processFiles(queue){
-				service.showOverlay({
-					message: 'Processing files...',
-					showProgress: true
-				});
+        service.showOverlay({
+          message: 'Processing files...',
+          showProgress: true
+        });
         service.tree=merkle.compute(queue);
         var q;
 
         // Tierion
         if (tierion.enabled) {
-					service.showOverlay({
-						message: 'Submitting hash to Tierion...',
-						showProgress: false
-					});
+          service.showOverlay({
+            message: 'Submitting hash to Tierion...',
+            showProgress: false
+          });
           if (!q) {
             q=Q.resolve();
           }
@@ -93,13 +93,13 @@ module.exports = [
 
         // Ethereum
         if (ethService.enabled) {
-					service.showOverlay({
-						message: 'Please submit or reject transaction using Metamask.',
-						showProgress: false,
-						showButton: false
-					});
+          service.showOverlay({
+            message: 'Please submit or reject transaction using Metamask.',
+            showProgress: false,
+            showButton: false
+          });
 
-      		if (!q) {
+          if (!q) {
             q=Q.resolve();
           }
           q=q.then(function() {
@@ -120,11 +120,11 @@ module.exports = [
                 .then(function loop(result){
                   console.log(result);
                   service.tree.eth_transactionId=result;
-									service.showOverlay({
-										message: 'Waiting for transaction block...',
-										showProgress: true,
-										showButton: true
-									});
+                  service.showOverlay({
+                    message: 'Waiting for transaction block...',
+                    showProgress: true,
+                    showButton: true
+                  });
 
                   return Q(ethService.eth.getTransactionByHash(result))
                   .then(function(transaction){
@@ -150,22 +150,22 @@ module.exports = [
           service.downloadArchive(queue);
         })
         .catch(function(err){
-					service.hideOverlay();
+          service.hideOverlay();
           console.log('Error !',err);
           $window.alert(err.message||(err.value&&err.value.message&&err.value.message.split('\n')[0])||'Unexpected error !');
         })
         .finally(function(){
-					service.hideOverlay();
+          service.hideOverlay();
         })
         .done();
 
       }, // processFiles
 
       downloadArchive: function downloadArchive(queue){
-				service.showOverlay({
-					message: 'Build archive...',
-					showProgress: true
-				});
+        service.showOverlay({
+          message: 'Build archive...',
+          showProgress: true
+        });
         var zip=new JSZip();
         var folder=zip.folder(merkle.hashToString(service.tree[0][0]));
         var date=(new Date()).toISOString();
@@ -214,14 +214,133 @@ module.exports = [
         });
 
         zip.generateAsync({type:"blob"}).then(function(content) {
-					service.showOverlay({
-						hideDialog: true
-					});
+          service.showOverlay({
+            hideDialog: true
+          });
           FileSaver.saveAs(content, "proofs-"+output.root+".zip");
-					service.hideOverlay();
+          service.hideOverlay();
         });
 
-      } // downloadArchive
+      }, // downloadArchive
+
+      validate: function(file) {
+        var q;
+
+        if (!file.proof) {
+          console.log('no merkle proof');
+          $window.alert('No merkle proof !');
+          return false;
+        }
+
+        if (merkle.hashToString(file.proof.hash)!=merkle.hashToString(file.hash)) {
+          console.log('hash mismatch !');
+          $window.alert('Hash mismatch between file and proof !');
+          return false;
+        }
+
+        var anchor;
+        if (
+          ethService.enabled
+          && file.proof.anchors.find(function(_anchor){
+            if (_anchor.type=='ethereum') {
+              anchor=_anchor;
+              return true;
+            }
+          })
+        ) {
+          service.showOverlay({
+            message: 'Retrieving transaction...',
+            showProgress: true,
+            showButton: true
+          });
+
+          if (!q) {
+            q=Q.resolve();
+          }
+
+          q=q.then(function() {
+            // check default account again
+            return ethService.init()
+
+          })
+          .then(function(){
+            if (!ethService.account) {
+               throw new Error('You must login with MetaMask first !');
+            }
+            // check network id
+            if (ethService.netId!=anchor.networkId) {
+              throw new Error('Ethereum network ID should be '+anchor.networkId);
+            }
+            // get transaction
+            return ethService.eth.getTransactionByHash(anchor.transactionId);
+
+          })
+          .then(function(transaction){
+            if (!transaction) {
+              throw new Error('Transaction could not be retrieved !');
+            }
+            console.log(JSON.stringify(transaction,false,4));
+
+            service.showOverlay({
+              message: 'Checking Merkle proof...',
+              showProgress: true,
+              showButton: true
+            });
+
+            // check merkle root
+            var root=file.proof.root;
+
+            if (typeof root != 'string') {
+              // allow validating files just processed
+              root=merkle.hashToString(root);
+            } else {
+              // final comparison expects Uint8Array
+              file.proof.root=merkle.stringToHash(root);
+            }
+
+            if (transaction.input.slice(transaction.input.length-root.length)!=root) {
+              throw new Error('Merkle root mismatch !');
+            }
+            var validated=merkle.checkProof(file.proof);
+            console.log('validated: ',validated.toString());
+            return validated;
+
+          });
+        }
+
+        q.then(function(validated){
+          service.showOverlay({
+            message: '',
+            showProgress: false,
+            showButton: false
+          });
+          var q=Q.defer();
+          $timeout(function(){
+            q.resolve(validated);
+          },1000);
+          return q.promise;
+
+        })
+        .then(function(validated){
+          $window.alert('The proof was '+(validated?'successfuly':'NOT')+' validated !');
+
+        })
+        .catch(function(err){
+          service.hideOverlay();
+          console.log('Error !',err);
+          $window.alert(err.message||(err.value&&err.value.message&&err.value.message.split('\n')[0])||'Unexpected error !');
+
+        })
+        .finally(function(){
+          service.hideOverlay();
+          if (anchor && anchor.transactionId) {
+            $window.open('https://'+(ethService.network_name[anchor.networkId]||'www')+'.etherscan.io/tx/'+anchor.transactionId,anchor.transactionId);
+          }
+
+        })
+        .done();
+
+      }
 
     });
 

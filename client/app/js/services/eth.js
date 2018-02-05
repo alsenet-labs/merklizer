@@ -43,6 +43,14 @@ module.exports=[
         42: 'This is the Kovan test network.'
       },
 
+      network_name: {
+        1: 'mainnet',
+        2: 'morden',
+        3: 'ropsten',
+        4: 'rinkeby',
+        42: 'kovan'
+      },
+
       init: function(){
         var provider;
 

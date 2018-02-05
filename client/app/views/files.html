@@ -10,8 +10,10 @@
 
       <label type="button" class="btn btn-primary btn-file">
         <span class="fa fa-folder" ></span>  Browse...
-        <input type="file" multiple accept="{{mimeTypes}}" style="display: none"  ng-model="selection" on-change="onFilesChanged" />
+        <input type="file" multiple accept="{{mimeTypes}}" style="display: none"  ng-model="selection" on-change="onFilesChanged($event)" />
       </label>
+
+      <input id="proofFileInput" type="file" multiple accept="application/json" style="display: none" ng-model="proof" on-change="$root.$broadcast('proofChanged',$event);" />
 
     </div>
 
@@ -42,6 +44,7 @@
           <th ng-show="isHTML5">Size</th>
           <th class="hash">Hash</th>
           <th></th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -56,6 +59,11 @@
             {{ item.hash_str }}
           </td>
           <td nowrap>
+            <div type="button" class="btn btn-xs" ng-click="$root.$broadcast('validateFile',item)">
+              <span class="fa fa-question"></span> Validate
+            </div>
+          </td>
+          <td nowrap>
             <div type="button" class="btn btn-xs" ng-click="remove(item)">
               <span class="fa fa-trash"></span> Remove
             </div>
@@ -64,7 +72,7 @@
       </tbody>
       <tfoot>
         <tr>
-          <td colspan="6" class="text-center">
+          <td colspan="7" class="text-center">
             <div st-pagination="" st-items-by-page="itemsByPage" st-displayed-pages="7"></div>
           </td>
         </tr>

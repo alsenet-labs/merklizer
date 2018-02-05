@@ -30,15 +30,20 @@
  * Controller of the merkleApp
  */
 
+
+var Q=require('q');
+
 module.exports=[
   '$scope',
   '$rootScope',
   '$timeout',
+  '$window',
   'processing',
   function (
     $scope,
     $rootScope,
     $timeout,
+    $window,
     processing
   ) {
     this.awesomeThings = [
@@ -49,21 +54,70 @@ module.exports=[
 
     angular.extend($scope,{
 
-      loaded: function(){
-        $timeout(function(){
-          $scope.isLoaded=true;
-        },3000);
-      }, // loaded
+      proofChanged_removeListener: function(){},
 
       init: function(){
 
         $scope.$on('processFiles',function(event,queue){
-          setTimeout(function(){
             processing.processFiles(queue);
-          });
+        });
+        $scope.$on('validateFile',function(event,file){
+            $scope.validate(file);
         });
 
-      } // init
+      }, // init
+
+      validate: function(file){
+        var q=Q.defer();
+
+        if (file.proof) {
+          q.resolve(file);
+
+        } else {
+
+          $window.alert('Select the proof file');
+          $scope.proofChanged_removeListener();
+
+          $scope.proofChanged_removeListener=$scope.$on('proofChanged',function($event,originalEvent){
+            var proofFile=originalEvent.target.files[0];
+
+            function _read(proofFile) {
+              var q=Q.defer();
+              if (!$scope.reader) {
+                $scope.reader=new FileReader();
+              }
+              $scope.reader.addEventListener('load',function listener(e){
+                $scope.reader.removeEventListener('load',listener);
+                Q.fcall(function(){
+                  return JSON.parse($scope.reader.result);
+                })
+                .then(q.resolve)
+                .catch(q.reject)
+                .done()
+              });
+              $scope.reader.readAsText(proofFile);
+              return q.promise;
+            } // _read
+
+            _read(proofFile)
+            .then(function(proof){
+              file.proof=proof;
+              q.resolve(file);
+            })
+            .catch(q.reject)
+            .done();
+
+          });
+
+          $('#proofFileInput').click();
+
+        }
+
+        q.promise.then(function(file){
+          processing.validate(file);
+        });
+
+      } // validate
 
     }); // extend scope
 
