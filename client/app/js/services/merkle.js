@@ -131,6 +131,8 @@ module.exports = [
       computeProofs: function computeProofs(tree){
         var leaves=tree[tree.length-1];
 
+        var date=(new Date()).toISOString();
+
         leaves.some(function(elem,i){
           var j=i;
 
@@ -139,6 +141,7 @@ module.exports = [
             hashType: merkle.hashType,
             hash: elem.hash,
             root: tree[0][0].hash,
+            date: date,
             operations: []
           }
 

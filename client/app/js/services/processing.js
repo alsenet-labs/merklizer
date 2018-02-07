@@ -65,6 +65,12 @@ module.exports = [
           showProgress: true
         });
         service.tree=merkle.compute(queue);
+
+        function pushAnchor(anchor){
+          queue.anchors=queue.anchors||[];
+          queue.anchors.push(anchor);
+        }
+
         var q;
 
         // Tierion
@@ -82,8 +88,11 @@ module.exports = [
               if (err) {
                 q.reject(err);
               } else {
-                service.tree.tierion_receipt=receipt;
                 console.log(receipt);
+                pushAnchor({
+                  type: 'tierion',
+                  receipt: receipt
+                });
                 q.resolve()
               }
             });
@@ -119,7 +128,6 @@ module.exports = [
                 })
                 .then(function loop(result){
                   console.log(result);
-                  service.tree.eth_transactionId=result;
                   service.showOverlay({
                     message: 'Waiting for transaction block...',
                     showProgress: true,
@@ -135,12 +143,17 @@ module.exports = [
                         .then(qq.resolve);
                       },15000);
                       return qq.promise;
+
                     } else {
                       console.log(JSON.stringify(transaction,false,4));
+                      pushAnchor({
+                        type: 'ethereum',
+                        networkId: parseInt(transaction.chainId),
+                        transactionId: transaction.hash
+                      });
                     }
                   });
                 });
-
               });
             });
           });
@@ -148,6 +161,9 @@ module.exports = [
 
         q.then(function(){
           service.downloadArchive(queue);
+        })
+        .then(function(){
+          service.showAllAnchors(queue.anchors);
         })
         .catch(function(err){
           service.hideOverlay();
@@ -161,63 +177,51 @@ module.exports = [
 
       }, // processFiles
 
+      getReadableProof: function(proof) {
+        return {
+          hashType: proof.hashType,
+          root: merkle.hashToString(proof.root),
+          hash: merkle.hashToString(proof.hash),
+          operations: (function(){
+            var result=[];
+            proof.operations.forEach(function(op){
+              if (op.left) {
+                result.push({left: merkle.hashToString(op.left)});
+              } else {
+                if (op.right) {
+                  result.push({right: merkle.hashToString(op.right)});
+                } else {
+                  throw new Error('invalid proof');
+                }
+              }
+            });
+            return result;
+          })(),
+          anchors: proof.anchors,
+          date: proof.date
+        }
+      }, // getReadableProof
+
       downloadArchive: function downloadArchive(queue){
         service.showOverlay({
           message: 'Build archive...',
           showProgress: true
         });
+
         var zip=new JSZip();
-        var folder=zip.folder(merkle.hashToString(service.tree[0][0]));
-        var date=(new Date()).toISOString();
-        var output;
+        var merkleRoot=merkle.getRoot(service.tree);
+        var folder=zip.folder(/*merkleRoot*/);
+
         queue.forEach(function(file,i){
-          output=$.extend(true,{},file.proof,{
-            root: merkle.hashToString(file.proof.root),
-            hash: merkle.hashToString(file.proof.hash),
-            date: date
-          });
-
-          function pushAnchor(anchor){
-            if (!output.anchors){
-              file.proof.anchors=output.anchors=(file.proof.anchors||[]);
-            }
-            output.anchors.push(anchor);
-          }
-
-          if (service.tree.eth_transactionId) {
-            pushAnchor({
-              type: 'ethereum',
-              networkId: ethService.netId,
-              transactionId: service.tree.eth_transactionId
-            });
-          }
-
-          if (service.tree.tierion_receipt) {
-            pushAnchor({
-              type: 'tierion',
-              receipt: service.tree.tierion_receipt
-            });
-          }
-
-          output.operations.some(function(op,i){
-            if (op.left) {
-               op.left=merkle.hashToString(op.left);
-
-            } else {
-              if (op.right) {
-                op.right=merkle.hashToString(op.right);
-              }
-            }
-          });
-          folder.file(file.name+'.json',JSON.stringify(output,false,2));
-
+          file.proof.anchors=queue.anchors;
+          folder.file(file.name+'.json',JSON.stringify(service.getReadableProof(file.proof),false,2));
         });
 
         zip.generateAsync({type:"blob"}).then(function(content) {
           service.showOverlay({
             hideDialog: true
           });
-          FileSaver.saveAs(content, "proofs-"+output.root+".zip");
+          FileSaver.saveAs(content, "proofs-"+merkleRoot+".zip");
           service.hideOverlay();
         });
 
@@ -240,6 +244,7 @@ module.exports = [
           return false;
         }
 
+        // TODO: many anchors
         var anchor;
         if (
           ethService.enabled
@@ -335,14 +340,41 @@ module.exports = [
         })
         .finally(function(){
           service.hideOverlay();
-          if (anchor && anchor.transactionId) {
-            $window.open('https://'+(ethService.network_name[anchor.networkId]||'www')+'.etherscan.io/tx/'+anchor.transactionId,anchor.transactionId);
-          }
-
+          service.showProof(file.proof,file.name+'.json');
+          service.showAllAnchors(file.proof.anchors);
         })
         .done();
 
-      }
+      }, // validate
+
+      showProof: function(proof,title){
+        proof=service.getReadableProof(proof);
+        var w=$window.open('about:blank',title||proof.hash);
+        w.document.write('<html><head><meta charset="UTF8" /><title>'+(title||proof.hash)+'</title></head><body><pre>'+JSON.stringify(proof,false,2)+'</pre></body></html>');
+        w.document.close();
+      },
+
+      showAllAnchors: function(anchors){
+        angular.forEach(anchors,function(anchor){
+          service.showAnchor(anchor);
+        });
+      },
+
+      showAnchor: function(anchor){
+        switch(anchor.type) {
+          case 'ethereum':
+            $window.open(service.getAnchorUrl(anchor),anchor.transactionId);
+            break;
+        }
+      },
+
+      getAnchorUrl: function(anchor) {
+        switch(anchor.type) {
+          case 'ethereum':
+             var subdomain=(ethService.netId==1)?'':(ethService.network_name[ethService.netId]+'.');
+             return 'https://'+subdomain+'etherscan.io/tx/'+anchor.transactionId;
+         }
+      } // getAnchorUrl
 
     });
 
