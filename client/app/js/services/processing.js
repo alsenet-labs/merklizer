@@ -148,7 +148,7 @@ module.exports = [
                       console.log(JSON.stringify(transaction,false,4));
                       pushAnchor({
                         type: 'ethereum',
-                        networkId: parseInt(transaction.chainId),
+                        networkId: parseInt(ethService.netId),
                         transactionId: transaction.hash
                       });
                     }
