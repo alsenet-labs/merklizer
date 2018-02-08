@@ -24,6 +24,7 @@
 
 var config =require('../../../../config.eth.js');
 var Eth=require('ethjs');
+var Q=require('q');
 
 module.exports=[
   '$q',
@@ -66,9 +67,23 @@ module.exports=[
         }
         eth=service.eth;
 
-        return eth.accounts()
-        .then(function(accounts){
-          service.account=config.account||accounts[0];
+        return Q.fcall(function(){
+          var q=Q.defer();
+          eth.accounts()
+          .then(function(accounts){
+            service.account=config.account||accounts[0];
+            q.resolve();
+          })
+          .catch(function(err){
+            if (eth.currentProvider.host==config.publicProvider) {
+              q.reject(err);
+            } else {
+              console.log('Local service not found, falling back to public provider');
+              eth=service.eth=new Eth(new Eth.HttpProvider(config.publicProvider));
+              q.resolve();
+            }
+          });
+          return q.promise;
         })
         .then(function(){
           return eth.net_version()
@@ -78,7 +93,6 @@ module.exports=[
           console.log(service.network_description[netId]||'This is an unknown network.');
         })
         .catch(console.log);
-
       } // init
 
     }); // extend web3

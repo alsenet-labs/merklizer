@@ -21,7 +21,8 @@
 */
 module.exports=(function(){
   return {
-    enabled: true
+    enabled: true,
+    publicProvider: 'https://kovan.infura.io'
 
   }
 })();
