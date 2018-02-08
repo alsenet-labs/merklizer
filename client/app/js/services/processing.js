@@ -267,13 +267,12 @@ module.exports = [
 
           q=q.then(function() {
             // check default account again
-            return ethService.init()
+            return ethService.init();
 
           })
           .then(function(){
-            if (!ethService.account) {
-               throw new Error('You must login with MetaMask first !');
-            }
+            ethService.account && console.log('account '+ethService.account);
+
             // check network id
             if (ethService.netId!=anchor.networkId) {
               throw new Error('Ethereum network ID should be '+anchor.networkId);
@@ -349,9 +348,12 @@ module.exports = [
 
       showProof: function(proof,title){
         proof=service.getReadableProof(proof);
-        var w=$window.open('about:blank',title||proof.hash);
+        var w=$window.open('',title||proof.hash);
+        $timeout(function(){
+        w.document.open();
         w.document.write('<html><head><meta charset="UTF8" /><title>'+(title||proof.hash)+'</title></head><body><pre>'+JSON.stringify(proof,false,2)+'</pre></body></html>');
         w.document.close();
+      });
       },
 
       showAllAnchors: function(anchors){
