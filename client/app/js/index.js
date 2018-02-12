@@ -44,9 +44,11 @@ var app=angular.module('merkleApp',[
   'ngFileSaver'
 ])
 .config(require('./config.js'))
+.service('fileService',require('./services/file.js'))
 .service('merkle',require('./services/merkle.js'))
 .service('tierion',require('./services/tierion.js'))
 .service('ethService',require('./services/eth.js'))
+.service('pdfService',require('./services/pdf.js'))
 .service('processing',require('./services/processing.js'))
 .directive('onChange',require('./directives/on-change.js'))
 .controller('MainCtrl',require('./controllers/main.js'))

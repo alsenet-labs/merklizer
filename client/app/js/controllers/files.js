@@ -21,6 +21,7 @@
 */
 
 'use strict';
+var config =require('../../../../config.files.js')();
 
 /**
  * @ngdoc function
@@ -39,6 +40,7 @@ module.exports=[
   'merkle',
   'tierion',
   'ethService',
+  'fileService',
   function (
     $scope,
     $rootScope,
@@ -47,7 +49,8 @@ module.exports=[
     $q,
     merkle,
     tierion,
-    ethService
+    ethService,
+    fileService
   ) {
     this.awesomeThings = [
       'HTML5 Boilerplate',
@@ -119,14 +122,23 @@ module.exports=[
         $scope.showOverlay('Adding files...');
         // reuse or initialize total size
         $scope.queue.size=$scope.queue.size||0;
+
         // update total size and store file
         angular.forEach($files,function(file,i) {
           $scope.progress.value=i;
-          $scope.queue.size+=file.size;
-          $scope.queue.push(file);
+          if (config.exclude.indexOf(file.type)<0) {
+            $scope.queue.size+=file.size;
+            $scope.queue.push(file);
+          } else {
+            $rootScope.$broadcast('excludedFile',file);
+          }
         });
         $scope.computeHashes($scope.queue)
         .then($scope.removeDuplicates)
+        .then(function(){
+          // dont ask me today why $rootScope does not work below but $scope.$root does
+          $rootScope.$broadcast('filesReady',$scope.queue);
+        })
         .finally($scope.hideOverlay);
 
       }, // onFilesDropped
@@ -148,10 +160,10 @@ module.exports=[
       },
 
       removeAll: function(){
-        if ($window.confirm('Are you sure ?')) {
+//        if ($window.confirm('Are you sure ?')) {
           $scope.queue.splice(0,$scope.queue.length);
           $scope.queue.size=0;
-        }
+//        }
       },
 
       /**
@@ -164,59 +176,29 @@ module.exports=[
       computeHashes: function(fileList){
         var q=$q.defer();
 
-        /**
-        @function computeFileHash
-        @description compute hash for given file
-        @param fileList
-        @param fileIndex
-        @returns $q.promise
-        */
-        function computeFileHash(fileList,fileIndex){
-          var file=fileList[fileIndex];
-          if (!file) return $q.resolve(-1);
-
-          if (!$scope.reader) {
-            $scope.reader=new FileReader();
-          }
-
-          var q=$q.defer();
-
-          $scope.reader.addEventListener('load',function listener(e){
-            file.hash=merkle.hash($scope.reader.result);
-            file.hash_str=merkle.hashToString(file.hash);
-            $scope.reader.removeEventListener('load',listener);
-            q.resolve(fileIndex+1);
-          });
-
-          $scope.reader.readAsArrayBuffer(file);
-
-          return q.promise;
-        }
-
         // dont use 'reduce' to be nice with CPU
         // and to allow cancelling the task
-        function loop(fileList,fileIndex) {
-          var file=fileList[fileIndex];
+        var index=0;
+        (function loop() {
+          var file=fileList[index++];
           if (!file) {
-            return q.resolve();
+            q.resolve();
+            return;
           }
           if (file.hash) {
-            return loop(fileList,fileIndex+1);
+            loop();
+            return;
           }
 
-          computeFileHash(fileList,fileIndex)
-          .then(function(index){
-            if (index>0) {
-              loop(fileList,index);
-
-            } else {
-              q.resolve();
-            }
+          fileService.read(file,'readAsArrayBuffer')
+          .then(function(result){
+            file.hash=merkle.hash(result);
+            file.hash_str=merkle.hashToString(file.hash);
           })
+          .then(loop)
           .catch(q.reject);
-        }
 
-        loop(fileList,0);
+        })();
 
         return q.promise;
 

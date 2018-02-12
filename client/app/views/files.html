@@ -13,7 +13,7 @@
         <input type="file" multiple accept="{{mimeTypes}}" style="display: none"  ng-model="selection" on-change="onFilesChanged($event)" />
       </label>
 
-      <input id="proofFileInput" type="file" multiple accept="application/json" style="display: none" ng-model="proof" on-change="$root.$broadcast('proofChanged',$event);" />
+      <!--input id="proofFileInput" type="file" multiple accept="application/json" style="display: none" ng-model="proof" on-change="$root.$broadcast('proofChanged',$event);" /-->
 
     </div>
 
@@ -26,7 +26,7 @@
             <span class="fa fa-link"></span> Process Files
           </div>
           <div type="button" class="btn btn-s btn-danger" ng-click="removeAll()" ng-disabled="!queue.length">
-            <span class="fa fa-trash"></span> Remove all
+            <span class="fa fa-recycle"></span> Clear List
           </div>
      </div>
     <!--div>
@@ -59,10 +59,26 @@
             {{ item.hash_str }}
           </td>
           <td nowrap>
+            <div ng-if="item.proof&&item.proof.validated" type="button" class="btn btn-xs" ng-click="$root.$broadcast('showProof',item)">
+              <span class="fa fa-list"></span> Proof
+            </div>
+          </td>
+          <td nowrap>
+            <div ng-if="item.proof&&item.proof.validated" type="button" class="btn btn-xs" ng-click="$root.$broadcast('showAnchors',item)">
+              <span class="fa fa-anchor"></span> Anchors
+            </div>
+          </td>
+
+          <!--td nowrap>
+            <div ng-if="false && item.type=='application/pdf'" type="button" class="btn btn-xs" ng-click="$root.$broadcast('showMetadata',item)">
+              <span class="fa fa-question"></span> Info
+            </div>
+          </td-->
+          <!--td nowrap>
             <div type="button" class="btn btn-xs" ng-click="$root.$broadcast('validateFile',item)">
               <span class="fa fa-question"></span> Validate
             </div>
-          </td>
+          </td-->
           <td nowrap>
             <div type="button" class="btn btn-xs" ng-click="remove(item)">
               <span class="fa fa-trash"></span> Remove
