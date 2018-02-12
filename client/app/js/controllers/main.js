@@ -30,21 +30,24 @@
  * Controller of the merkleApp
  */
 
-
-var Q=require('q');
-
 module.exports=[
   '$scope',
   '$rootScope',
   '$timeout',
   '$window',
   'processing',
+  'pdfService',
+  'fileService',
+  '$q',
   function (
     $scope,
     $rootScope,
     $timeout,
     $window,
-    processing
+    processing,
+    pdfService,
+    fileService,
+    $q
   ) {
     this.awesomeThings = [
       'HTML5 Boilerplate',
@@ -53,6 +56,8 @@ module.exports=[
     ];
 
     angular.extend($scope,{
+
+      proofs: [],
 
       proofChanged_removeListener: function(){},
 
@@ -64,11 +69,40 @@ module.exports=[
         $scope.$on('validateFile',function(event,file){
             $scope.validate(file);
         });
+        $scope.$on('showMetadata',function(event,file){
+            $scope.showMetadata(file);
+        });
+
+        $scope.$on('excludedFile',function(event,file){
+          if (file.type=='application/json') {
+            $scope.proofs.push(file);
+          }
+        });
+
+        $scope.$on('filesReady',function(event,files){
+          $scope.filesReady(files);
+        });
+
+        $scope.$on('showAnchors',function(event,file){
+          processing.showAllAnchors(file.proof.anchors);
+        });
+
+        $scope.$on('showProof',function(event,file){
+          processing.showProof(file.proof,file.name+'.json');
+        });
 
       }, // init
 
+      showMetadata: function(file){
+        fileService.read(file,'readAsArrayBuffer')
+        .then(pdfService.getMetadata)
+        .then(console.log);
+
+      },
+
+      // click on validate button
       validate: function(file){
-        var q=Q.defer();
+        var q=$q.defer();
 
         if (file.proof) {
           q.resolve(file);
@@ -81,31 +115,15 @@ module.exports=[
           $scope.proofChanged_removeListener=$scope.$on('proofChanged',function($event,originalEvent){
             var proofFile=originalEvent.target.files[0];
 
-            function _read(proofFile) {
-              var q=Q.defer();
-              if (!$scope.reader) {
-                $scope.reader=new FileReader();
-              }
-              $scope.reader.addEventListener('load',function listener(e){
-                $scope.reader.removeEventListener('load',listener);
-                Q.fcall(function(){
-                  return JSON.parse($scope.reader.result);
-                })
-                .then(q.resolve)
-                .catch(q.reject)
-                .done()
-              });
-              $scope.reader.readAsText(proofFile);
-              return q.promise;
-            } // _read
-
-            _read(proofFile)
+            fileService.read(proofFile,'readAsText')
+            .then(function(result){
+              return JSON.parse(result)
+            })
             .then(function(proof){
               file.proof=proof;
               q.resolve(file);
             })
-            .catch(q.reject)
-            .done();
+            .catch(q.reject);
 
           });
 
@@ -117,7 +135,49 @@ module.exports=[
           processing.validate(file);
         });
 
-      } // validate
+      }, // validate
+
+      filesReady: function(queue) {
+        $scope.readProofs($scope.proofs)
+        .then(function(proofs){
+          // associate proof with file
+          proofs.forEach(function(proof){
+            queue.some(function(file){
+              if (file.hash_str==proof.data.hash) {
+                file.proof=proof.data;
+                return true;
+              }
+            });
+          });
+          processing.validateAll(queue);
+        });
+      },
+
+      readProofs: function(files){
+        var q=$q.defer();
+
+        var index=0;
+        (function loop(){
+          var file=files[index++];
+          if (!file) {
+            q.resolve(files);
+            return;
+          }
+          if (file.data) {
+            loop();
+            return;
+          }
+          fileService.read(file,'readAsText')
+          .then(function(result){
+            file.data=JSON.parse(result);
+            loop();
+          })
+          .catch(q.reject);
+
+        })();
+        return q.promise;
+      }
+
 
     }); // extend scope
 

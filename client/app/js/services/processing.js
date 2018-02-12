@@ -22,10 +22,10 @@
 
 'use strict';
 
-var Q=require('q');
 var JSZip=require('jszip');
 
 module.exports = [
+  '$q',
   '$rootScope',
   '$window',
   '$timeout',
@@ -33,15 +33,18 @@ module.exports = [
   'ethService',
   'tierion',
   'FileSaver',
+  'pdfService',
 
   function(
+    $q,
     $rootScope,
     $window,
     $timeout,
     merkle,
     ethService,
     tierion,
-    FileSaver
+    FileSaver,
+    pdfService
 
   ) {
     var service=this;
@@ -80,10 +83,10 @@ module.exports = [
             showProgress: false
           });
           if (!q) {
-            q=Q.resolve();
+            q=$q.resolve();
           }
           q=q.then(function(){
-            var q=Q.defer();
+            var q=$q.defer();
             tierion.hashClient.submitHashItem(service.prefix+merkle.getRoot(service.tree),function(err,receipt){
               if (err) {
                 q.reject(err);
@@ -109,50 +112,48 @@ module.exports = [
           });
 
           if (!q) {
-            q=Q.resolve();
+            q=$q.resolve();
           }
           q=q.then(function() {
-            return Q.fcall(function(){
-              // check default account again
-              return ethService.init()
-              .then(function(){
-                if (!ethService.account) {
-                   throw new Error('You must login with MetaMask first !');
-                }
-                return ethService.eth.sendTransaction({
-                  from: ethService.account,
-                  to: ethService.account,
-                  value: '0',
-                  data: '0x'+service.prefix+merkle.getRoot(service.tree),
-                  gas: '250000'
-                })
-                .then(function loop(result){
-                  console.log(result);
-                  service.showOverlay({
-                    message: 'Waiting for transaction block...',
-                    showProgress: true,
-                    showButton: true
-                  });
+            // check default account again
+            return ethService.init()
+            .then(function(){
+              if (!ethService.account) {
+                 throw new Error('You must login with MetaMask first !');
+              }
+              return ethService.eth.sendTransaction({
+                from: ethService.account,
+                to: ethService.account,
+                value: '0',
+                data: '0x'+service.prefix+merkle.getRoot(service.tree),
+                gas: '250000'
+              })
+              .then(function loop(result){
+                console.log(result);
+                service.showOverlay({
+                  message: 'Waiting for transaction block...',
+                  showProgress: true,
+                  showButton: true
+                });
 
-                  return Q(ethService.eth.getTransactionByHash(result))
-                  .then(function(transaction){
-                    if (!transaction) {
-                      var qq=Q.defer();
-                      $timeout(function(){
-                        loop(result)
-                        .then(qq.resolve);
-                      },15000);
-                      return qq.promise;
+                return ethService.eth.getTransactionByHash(result)
+                .then(function(transaction){
+                  if (!transaction) {
+                    var qq=$q.defer();
+                    $timeout(function(){
+                      loop(result)
+                      .then(qq.resolve);
+                    },15000);
+                    return qq.promise;
 
-                    } else {
-                      console.log(JSON.stringify(transaction,false,4));
-                      pushAnchor({
-                        type: 'ethereum',
-                        networkId: parseInt(ethService.netId),
-                        transactionId: transaction.hash
-                      });
-                    }
-                  });
+                  } else {
+                    console.log(JSON.stringify(transaction,false,4));
+                    pushAnchor({
+                      type: 'ethereum',
+                      networkId: parseInt(ethService.netId),
+                      transactionId: transaction.hash
+                    });
+                  }
                 });
               });
             });
@@ -163,7 +164,9 @@ module.exports = [
           service.downloadArchive(queue);
         })
         .then(function(){
-          service.showAllAnchors(queue.anchors);
+          queue.forEach(function(file){
+            file.proof.validated=true;
+          });
         })
         .catch(function(err){
           service.hideOverlay();
@@ -172,8 +175,7 @@ module.exports = [
         })
         .finally(function(){
           service.hideOverlay();
-        })
-        .done();
+        });
 
       }, // processFiles
 
@@ -233,15 +235,19 @@ module.exports = [
         if (!file.proof) {
           console.log('no merkle proof');
           $window.alert('No merkle proof !');
-          return false;
+          return $q.resolve(false);
+        }
+
+        if (file.proof.validated!==undefined) {
+          return $q.resolve(file.proof.validated);
         }
 
         if (merkle.hashToString(file.proof.hash)!=merkle.hashToString(file.hash)) {
           console.log('hash mismatch !');
           $window.alert('Hash mismatch between file and proof !');
           console.log(proof);
-          delete file.proof;
-          return false;
+          file.proof.validated=false;
+          return q.resolve(false);
         }
 
         // TODO: many anchors
@@ -262,7 +268,7 @@ module.exports = [
           });
 
           if (!q) {
-            q=Q.resolve();
+            q=$q.resolve();
           }
 
           q=q.then(function() {
@@ -305,22 +311,24 @@ module.exports = [
             }
 
             if (transaction.input.slice(transaction.input.length-root.length)!=root) {
+              file.proof.validated=false;
               throw new Error('Merkle root mismatch !');
             }
             var validated=merkle.checkProof(file.proof);
+            file.proof.validated=validated;
             console.log('validated: ',validated.toString());
             return validated;
 
           });
         }
 
-        q.then(function(validated){
+        return q.then(function(validated){
           service.showOverlay({
             message: '',
             showProgress: false,
             showButton: false
           });
-          var q=Q.defer();
+          var q=$q.defer();
           $timeout(function(){
             q.resolve(validated);
           },1000);
@@ -329,6 +337,7 @@ module.exports = [
         })
         .then(function(validated){
           $window.alert('The proof was '+(validated?'successfuly':'NOT')+' validated !');
+          return validated;
 
         })
         .catch(function(err){
@@ -339,10 +348,9 @@ module.exports = [
         })
         .finally(function(){
           service.hideOverlay();
-          service.showProof(file.proof,file.name+'.json');
-          service.showAllAnchors(file.proof.anchors);
-        })
-        .done();
+//          service.showProof(file.proof,file.name+'.json');
+//          service.showAllAnchors(file.proof.anchors);
+        });
 
       }, // validate
 
@@ -350,11 +358,11 @@ module.exports = [
         proof=service.getReadableProof(proof);
         var w=$window.open('',title||proof.hash);
         $timeout(function(){
-        w.document.open();
-        w.document.write('<html><head><meta charset="UTF8" /><title>'+(title||proof.hash)+'</title></head><body><pre>'+JSON.stringify(proof,false,2)+'</pre></body></html>');
-        w.document.close();
-      });
-      },
+          w.document.open();
+          w.document.write('<html><head><meta charset="UTF8" /><title>'+(title||proof.hash)+'</title></head><body><pre>'+JSON.stringify(proof,false,2)+'</pre></body></html>');
+          w.document.close();
+        });
+      }, // showProof
 
       showAllAnchors: function(anchors){
         angular.forEach(anchors,function(anchor){
@@ -376,7 +384,29 @@ module.exports = [
              var subdomain=(ethService.netId==1)?'':(ethService.network_name[ethService.netId]+'.');
              return 'https://'+subdomain+'etherscan.io/tx/'+anchor.transactionId;
          }
-      } // getAnchorUrl
+      }, // getAnchorUrl
+
+      validateAll: function(files) {
+        var q=$q.defer();
+
+        var index=0;
+        (function loop(){
+          var file=files&&files[index++];
+          if (!file) {
+            q.resolve();
+            return;
+          }
+          if (!file.proof) {
+            loop();
+            return;
+          }
+          service.validate(file)
+          .then(loop);
+        })();
+
+        return q.promise;
+
+      } // validateAll
 
     });
 

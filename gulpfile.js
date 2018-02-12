@@ -26,6 +26,7 @@ var browserSync = require('browser-sync');
 var gutil = require('gulp-util');
 var runSequence = require('run-sequence');
 var merge = require('merge-stream');
+var rename = require('gulp-rename');
 
 gulp.task('browserSync',function(){
     browserSync.init(["client/app/css/bundle.css", "client/app/js/index.min.js","./client/app/index.html",'./client/app/views/**.html'], {
@@ -44,6 +45,9 @@ gulp.task('copy', function () {
    .pipe(gulp.dest('./client/app/css/')));
 	 streams.push(gulp.src('./node_modules/pretty-file-icons/svg/*')
    .pipe(gulp.dest('./client/app/images')));
+   streams.push(gulp.src('./node_modules/pdfjs-dist/build/pdf.worker.min.js')
+   .pipe(rename('index.worker.min.js'))
+   .pipe(gulp.dest('./client/app/js/')));
 	 return merge.apply(null,streams);
 });
 
