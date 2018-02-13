@@ -49,7 +49,9 @@ module.exports = [
   ) {
     var service=this;
     angular.extend(service,{
-      prefix: '4d45524b4c495a45', // MERKLIZE
+      prefix: '',
+
+      cached_transactions: {},
 
       init: function(){
       }, // init
@@ -229,12 +231,14 @@ module.exports = [
 
       }, // downloadArchive
 
-      validate: function(file) {
+      validate: function(file, options) {
         var q;
 
         if (!file.proof) {
-          console.log('no merkle proof');
-          $window.alert('No merkle proof !');
+          console.log('no merkle proof',file);
+          if (!options.silent) {
+            $window.alert('No merkle proof !');
+          }
           return $q.resolve(false);
         }
 
@@ -243,9 +247,10 @@ module.exports = [
         }
 
         if (merkle.hashToString(file.proof.hash)!=merkle.hashToString(file.hash)) {
-          console.log('hash mismatch !');
-          $window.alert('Hash mismatch between file and proof !');
-          console.log(proof);
+          console.log('hash mismatch between file and proof !',file);
+          if (!options.silent) {
+            $window.alert('Hash mismatch between file and proof !');
+          }
           file.proof.validated=false;
           return q.resolve(false);
         }
@@ -281,17 +286,40 @@ module.exports = [
 
             // check network id
             if (ethService.netId!=anchor.networkId) {
-              throw new Error('Ethereum network ID should be '+anchor.networkId);
+              throw new Error('You are connected on '+ethService.network_name[ethService.netId]+' but the Merkle root has been anchored to '+ethService.network_name[anchor.networkId]);
             }
+
             // get transaction
-            return ethService.eth.getTransactionByHash(anchor.transactionId);
+            if (service.cached_transactions[anchor.transactionId]) {
+              return service.cached_transactions[anchor.transactionId];
+            } else {
+              return ethService.eth.getTransactionByHash(anchor.transactionId)
+              .then(function(transaction){
+                service.cached_transactions[anchor.transactionId]=transaction;
+                console.log(JSON.stringify(transaction,false,4));
+                return transaction;
+              });
+            }
 
           })
           .then(function(transaction){
-            if (!transaction) {
-              throw new Error('Transaction could not be retrieved !');
+            // get block
+            if (transaction.block) {
+              return transaction;
+            } else {
+              return ethService.eth.getBlockByNumber(transaction.blockNumber,false)
+              .then(function(block){
+                transaction.block=block;
+                console.log(JSON.stringify(block,false,4));
+                return transaction;
+              })
             }
-            console.log(JSON.stringify(transaction,false,4));
+
+          })
+          .then(function(transaction){
+            transaction.block._date=new Date(transaction.block.timestamp*1000).toISOString();
+
+            anchor.transaction=transaction;
 
             service.showOverlay({
               message: 'Checking Merkle proof...',
@@ -316,7 +344,7 @@ module.exports = [
             }
             var validated=merkle.checkProof(file.proof);
             file.proof.validated=validated;
-            console.log('validated: ',validated.toString());
+            console.log(file.name+' validated: ',validated.toString());
             return validated;
 
           });
@@ -336,7 +364,9 @@ module.exports = [
 
         })
         .then(function(validated){
-          $window.alert('The proof was '+(validated?'successfuly':'NOT')+' validated !');
+          if (!options.silent) {
+            $window.alert('The proof was '+(validated?'successfuly':'NOT')+' validated !');
+          }
           return validated;
 
         })
@@ -348,8 +378,6 @@ module.exports = [
         })
         .finally(function(){
           service.hideOverlay();
-//          service.showProof(file.proof,file.name+'.json');
-//          service.showAllAnchors(file.proof.anchors);
         });
 
       }, // validate
@@ -381,14 +409,14 @@ module.exports = [
       getAnchorUrl: function(anchor) {
         switch(anchor.type) {
           case 'ethereum':
-             var subdomain=(ethService.netId==1)?'':(ethService.network_name[ethService.netId]+'.');
+             var subdomain=(anchor.networkId==1)?'':(ethService.network_name[anchor.networkId]+'.');
              return 'https://'+subdomain+'etherscan.io/tx/'+anchor.transactionId;
          }
       }, // getAnchorUrl
 
       validateAll: function(files) {
         var q=$q.defer();
-
+        var count=0;
         var index=0;
         (function loop(){
           var file=files&&files[index++];
@@ -400,11 +428,34 @@ module.exports = [
             loop();
             return;
           }
-          service.validate(file)
+          ++count;
+          if (file.proof.validated) {
+            loop();
+            return;
+          }
+          service.validate(file,{
+            silent: true
+          })
           .then(loop);
+
         })();
 
-        return q.promise;
+        return q.promise.then(function(){
+          var failures=0;
+          files.forEach(function(file){
+            if (file.proof && !file.proof.validated) {
+              ++failures;
+            }
+          });
+
+          if (!failures) {
+            if (count) {
+              $window.alert('Validation was successful.');
+            }
+          } else {
+            $window.alert(failures+' file'+(failures>1?'s':'')+' could not be validated.');
+          }
+        });
 
       } // validateAll
 

@@ -22,7 +22,10 @@
 module.exports=(function(){
   return {
     enabled: true,
-    publicProvider: 'https://kovan.infura.io'
+    publicProvider: {
+      mainnet: 'https://mainnet.infura.io',
+      kovan: 'https://kovan.infura.io'
+    }
 
   }
 })();
