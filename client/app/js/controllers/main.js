@@ -74,7 +74,8 @@ module.exports=[
         });
 
         $scope.$on('excludedFile',function(event,file){
-          if (file.type=='application/json') {
+          var ext=file.name.split('.').pop();
+          if (file.type=='application/json' || (ext=='json')) {
             $scope.proofs.push(file);
           }
         });
