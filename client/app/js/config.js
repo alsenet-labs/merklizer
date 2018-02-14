@@ -39,17 +39,27 @@ module.exports=[
 
     $urlRouterProvider.otherwise(function($injector){
       $injector.invoke(['$state', function($state) {
-        $state.go('files', {}, { location: true } );
+        $state.go('chooser', {}, { location: true } );
       }]);
     });
 
     $stateProvider
-      .state('files', {
-        url: '/files',
-        templateUrl: 'views/files.html',
-        controller: 'FilesCtrl',
-        controllerAs: 'files'
-      })
+    .state('chooser', {
+      url: '/',
+      templateUrl: 'views/chooser.html'
+    })
+    .state('anchor', {
+      url: '/anchor',
+      templateUrl: 'views/files.html',
+      controller: 'FilesCtrl',
+      controllerAs: 'files'
+    })
+    .state('validate', {
+      url: '/validate',
+      templateUrl: 'views/files.html',
+      controller: 'FilesCtrl',
+      controllerAs: 'files'
+    })
 
   }
 ];

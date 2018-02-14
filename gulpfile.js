@@ -56,7 +56,7 @@ gulp.task('sass', function () {
 
   return gulp.src([
     //'./node_modules/font-awesome/scss/font-awesome.scss',
-    './client/app/sass/main.scss'
+    './client/app/sass/**.scss'
     ])
     .pipe(sass({
       includePaths: [

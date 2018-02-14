@@ -6,7 +6,8 @@
 
     <div class="col-md-3">
 
-      <h3>Select files</h3>
+      <h3 ng-if="$state.current.name=='anchor'">Select files to be anchored.</h3>
+      <h3 ng-if="$state.current.name=='validate'">Select files to be validated.</h3>
 
       <label type="button" class="btn btn-primary btn-file">
         <span class="fa fa-folder" ></span>  Browse...
@@ -17,7 +18,7 @@
 
     </div>
 
-    <div ng-if="queue.length" class="col-md-9" style="margin-bottom: 40px">
+    <div ng-if="queue.length && $state.current.name=='anchor'" class="col-md-9" style="margin-bottom: 40px">
 
       <h3 ng-if="queue.length">{{ queue.length }} file{{ queue.length>1 ? 's' : '' }} in queue ({{ queue.size/1024/1024|number:2 }}Mb)</h3>
 
