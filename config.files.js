@@ -24,6 +24,6 @@
 
 module.exports=(function(){
     return {
-      exclude: ['application/json']
+      exclude: [{mime: 'application/json', ext: 'json'}]
     }
 });

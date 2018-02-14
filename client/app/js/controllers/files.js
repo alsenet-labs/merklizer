@@ -126,7 +126,10 @@ module.exports=[
         // update total size and store file
         angular.forEach($files,function(file,i) {
           $scope.progress.value=i;
-          if (config.exclude.indexOf(file.type)<0) {
+          var ext=file.name.split('.').pop();
+          if (!config.exclude.find(function(type){
+            return type.mime==file.type || (ext && type.ext==ext);
+          })) {
             $scope.queue.size+=file.size;
             $scope.queue.push(file);
           } else {
@@ -152,7 +155,6 @@ module.exports=[
           $scope.queue.some(function(_file,i){
             if (file==_file){
               $scope.queue.splice(i,1);
-              $scope.$apply();
               return true;
             }
           });
