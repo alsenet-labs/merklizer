@@ -1,0 +1,25 @@
+<div id="chooser">
+  <div class="container">
+    <div class="row">
+      <div class="col-md">
+        <p>
+          Compute a Merkle tree for the files you select, anchor the Merkle root on the blockchain
+          then download Merkle proofs and the blockchain recept as a json file archive.
+        </p>
+        <div class="button-wrapper">
+          <div type="button" class="btn btn-s btn-primary" ng-click="$state.transitionTo('anchor')">
+            <i class="fa fa-link"></i> Anchor Files
+          </div>
+        </div>
+      </div>
+      <div class="col-md">
+        <p>Assistant for document authenticity validation process.</p>
+        <div class="button-wrapper">
+          <div type="button" class="btn btn-s btn-danger" ng-click="$state.transitionTo('validate')" >
+            <i class="fa fa-cogs"></i> Validate Files
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

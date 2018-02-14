@@ -44,6 +44,7 @@ var app=angular.module('merkleApp',[
   'ngFileSaver'
 ])
 .config(require('./config.js'))
+.run(require('./run.js'))
 .service('fileService',require('./services/file.js'))
 .service('merkle',require('./services/merkle.js'))
 .service('tierion',require('./services/tierion.js'))
