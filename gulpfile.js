@@ -35,7 +35,8 @@ gulp.task('browserSync',function(){
 				},
         server: {
             baseDir: "./client/app/"
-        }
+        },
+			  https: true
     });
 });
 

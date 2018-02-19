@@ -56,9 +56,19 @@ module.exports=[
     })
     .state('validate', {
       url: '/validate',
+      templateUrl: 'views/chooser.html'
+    })
+    .state('validateFile', {
+      url: '/validate-file',
       templateUrl: 'views/files.html',
       controller: 'FilesCtrl',
       controllerAs: 'files'
+    })
+    .state('validateQRCode', {
+      url: '/validate-qrcode',
+      templateUrl: 'views/qrcode.html',
+      controller: 'QRCodeCtrl',
+      controllerAs: 'qrcode'
     })
 
   }
