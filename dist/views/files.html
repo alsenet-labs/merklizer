@@ -1,0 +1,101 @@
+<div ng-cloak ng-controller="FilesCtrl" id="merkle-files" ng-cloak  files-read="false" files-drop="onFilesDropped($files, $event)">
+
+  <div class="dashes" ng-if="!$root._showOverlay"></div>
+
+  <div class="row" ng-class="{blur: $root._showOverlay}">
+
+    <div class="col-md-3">
+
+      <h3 ng-if="$state.current.name=='anchor'">Select files to be anchored.</h3>
+      <h3 ng-if="$state.current.name=='validate'">Select files to be validated.</h3>
+
+      <label type="button" class="btn btn-primary btn-file">
+        <span class="fa fa-folder" ></span>  Browse...
+        <input type="file" multiple accept="{{mimeTypes}}" style="display: none"  ng-model="selection" on-change="onFilesChanged($event)" />
+      </label>
+
+      <!--input id="proofFileInput" type="file" multiple accept="application/json" style="display: none" ng-model="proof" on-change="$root.$broadcast('proofChanged',$event);" /-->
+
+    </div>
+
+    <div ng-if="queue.length && $state.current.name=='anchor'" class="col-md-9" style="margin-bottom: 40px">
+
+      <h3 ng-if="queue.length">{{ queue.length }} file{{ queue.length>1 ? 's' : '' }} in queue ({{ queue.size/1024/1024|number:2 }}Mb)</h3>
+
+      <div>
+          <div type="button" class="btn btn-s btn-primary" ng-click="process()" ng-disabled="isRunning || !queue.length">
+            <span class="fa fa-link"></span> Process Files
+          </div>
+          <div type="button" class="btn btn-s btn-danger" ng-click="removeAll()" ng-disabled="!queue.length">
+            <span class="fa fa-recycle"></span> Clear List
+          </div>
+     </div>
+    <!--div>
+      <input id="toggleShowFileList" type="checkbox" ng-model="showFileList"><label for="toggleShowFileList">Show file list</label>
+    </div-->
+
+    </div>
+    <div class="table-wrapper">
+    <table ng-if="queue.length && showFileList" st-safe-src="queue" st-table="rows" class="table table-striped">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Name</th>
+          <th>Date</th>
+          <th ng-show="isHTML5">Size</th>
+          <th class="hash">Hash</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="item in rows" ng-class="{duplicate: item.duplicate}">
+          <td><img ng-src="{{ item.name | prettyFileIcon }}"></td>
+          <td><strong>{{ item.name }}</strong></td>
+          <td>
+            {{ item.lastModifiedDate | date:'yyyy/MM/dd HH:mm:ss' }}
+          </td>
+          <td ng-show="isHTML5" nowrap>{{ item.size/1024/1024|number:2 }} MB</td>
+          <td class="hash" nowrap>
+            {{ item.hash_str }}
+          </td>
+          <td nowrap>
+            <div ng-if="item.proof&&item.proof.validated" type="button" class="btn btn-xs" ng-click="$root.$broadcast('showProof',item)">
+              <span class="fa fa-list"></span> Proof
+            </div>
+          </td>
+          <td nowrap>
+            <div ng-if="item.proof&&item.proof.validated" type="button" class="btn btn-xs" ng-click="$root.$broadcast('showAnchors',item)">
+              <span class="fa fa-anchor"></span> Anchors
+            </div>
+          </td>
+
+          <!--td nowrap>
+            <div ng-if="false && item.type=='application/pdf'" type="button" class="btn btn-xs" ng-click="$root.$broadcast('showMetadata',item)">
+              <span class="fa fa-question"></span> Info
+            </div>
+          </td-->
+          <!--td nowrap>
+            <div type="button" class="btn btn-xs" ng-click="$root.$broadcast('validateFile',item)">
+              <span class="fa fa-question"></span> Validate
+            </div>
+          </td-->
+          <td nowrap>
+            <div type="button" class="btn btn-xs" ng-click="remove(item)">
+              <span class="fa fa-trash"></span> Remove
+            </div>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="7" class="text-center">
+            <div st-pagination="" st-items-by-page="itemsByPage" st-displayed-pages="7"></div>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+
+</div>
