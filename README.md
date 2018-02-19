@@ -44,3 +44,6 @@ Provisions are made to allow anchoring data on other blockchains.
  yarn
  gulp
 ```
+
+## DEMO
+  https://alsenet-labs.github.io/merklizer
