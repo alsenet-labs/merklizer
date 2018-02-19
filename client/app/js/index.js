@@ -35,23 +35,29 @@ require('angular-ui-bootstrap');
 require('angular-files-drop');
 require('angular-smart-table');
 require('angular-file-saver');
+require('webcam/dist/webcam.min.js');
+require('bc-qr-reader');
 
 var app=angular.module('merkleApp',[
   'ui.router',
   'ui.bootstrap',
   'angular-files-drop',
   'smart-table',
-  'ngFileSaver'
+  'ngFileSaver',
+  'webcam',
+  'bcQrReader'
 ])
 .config(require('./config.js'))
 .run(require('./run.js'))
+.service('QRCodeService',require('./services/qrcode.js'))
+.service('processing',require('./services/processing.js'))
 .service('fileService',require('./services/file.js'))
 .service('merkle',require('./services/merkle.js'))
 .service('tierion',require('./services/tierion.js'))
 .service('ethService',require('./services/eth.js'))
 .service('pdfService',require('./services/pdf.js'))
-.service('processing',require('./services/processing.js'))
 .directive('onChange',require('./directives/on-change.js'))
+.controller('QRCodeCtrl',require('./controllers/qrcode.js'))
 .controller('MainCtrl',require('./controllers/main.js'))
 .controller('FilesCtrl',require('./controllers/files.js'))
 .controller('OverlayCtrl',require('./controllers/overlay.js'))
