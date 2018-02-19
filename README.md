@@ -46,4 +46,4 @@ Provisions are made to allow anchoring data on other blockchains.
 ```
 
 ## DEMO
-  https://alsenet-labs.github.io/merklizer/dist
+  https://alsenet-labs.github.io/merklizer/dist/index.html
