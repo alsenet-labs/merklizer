@@ -85,7 +85,7 @@ function callback(err,msg){
 }
 
 gulp.task('default', function() {
-	runSequence(
+	return runSequence(
 		'copy',
 		'sass',
 		'watch',
@@ -94,3 +94,33 @@ gulp.task('default', function() {
 
 	);
 });
+
+gulp.task('build', function(){
+	return runSequence(
+		'copy',
+		'sass',
+		'browserify',
+		'dist'
+	);
+});
+
+gulp.task('dist', function(){
+   var streams=[];
+   streams.push(gulp.src('./client/app/index.html')
+   .pipe(gulp.dest('./dist/')));
+   streams.push(gulp.src('./client/app/views/*')
+   .pipe(gulp.dest('./dist/views/')));
+   streams.push(gulp.src('./client/app/js/index.min.*')
+   .pipe(gulp.dest('./dist/js/')));
+   streams.push(gulp.src('./client/app/css/bundle.*')
+   .pipe(gulp.dest('./dist/css/')));
+   streams.push(gulp.src('./node_modules/pretty-file-icons/svg/*')
+   .pipe(gulp.dest('./dist/images/')));
+   streams.push(gulp.src('./node_modules/pdfjs-dist/build/pdf.worker.min.js')
+   .pipe(rename('index.worker.min.js'))
+   .pipe(gulp.dest('./dist/js/')));
+   return merge.apply(null,streams);
+
+
+});
+
