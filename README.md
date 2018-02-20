@@ -1,6 +1,8 @@
 # merklizer
 Web app for computing Merkle trees and anchoring hashes to the open public blockchains
 
+__Under active development, don't use it for production yet.__
+  
 ## Copyright
  Copyright (c) 2018 ALSENET SA
 
@@ -22,11 +24,18 @@ Web app for computing Merkle trees and anchoring hashes to the open public block
  You should have received a copy of the GNU Affero General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+## DEMO
+
+  https://alsenet-labs.github.io/merklizer/dist/index.html
+  
+  Please note that the QRCode part is not yet functional.
+  
 # README
 
 The actual demo is hashing files using SHA512-256, building a Merkle
 tree from those hashes and anchoring the Merkle root directly to
-the Ethereum blockchain (using the [MetaMask browser extension](https://metamask.io/)).
+the Ethereum blockchain (using the [MetaMask browser extension](https://metamask.io/))
+or a local node.
 
 After the blockchain transaction appears on the blockchain, it allows
 you to download a zip archive containing all the Merkle proofs and the
@@ -45,5 +54,3 @@ Provisions are made to allow anchoring data on other blockchains.
  gulp
 ```
 
-## DEMO
-  https://alsenet-labs.github.io/merklizer/dist/index.html
