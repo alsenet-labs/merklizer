@@ -24,9 +24,9 @@ __Under active development, don't use it for production yet.__
  You should have received a copy of the GNU Affero General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-## DEMO
+## ONLINE DEMO
 
-  [https://alsenet-labs.github.io/merklizer/dist/index.html](https://alsenet-labs.github.io/merklizer/dist/index.html)
+  You can check the online demo here: [https://alsenet-labs.github.io/merklizer/dist/index.html](https://alsenet-labs.github.io/merklizer/dist/index.html)
   
   Please note that the QRCode part is not yet functional.
   
