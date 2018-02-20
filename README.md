@@ -26,7 +26,7 @@ __Under active development, don't use it for production yet.__
 
 ## DEMO
 
-  https://alsenet-labs.github.io/merklizer/dist/index.html
+  [https://alsenet-labs.github.io/merklizer/dist/index.html](https://alsenet-labs.github.io/merklizer/dist/index.html)
   
   Please note that the QRCode part is not yet functional.
   
