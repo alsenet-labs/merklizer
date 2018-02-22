@@ -116,6 +116,23 @@ module.exports=[
         }
       }, // removeDuplicates
 
+/*      excludeFileType: function(file){
+        var ext=file.name.split('.').pop();
+        return config.exclude.find(function(type){
+            return type.mime==file.type || (ext && type.ext==ext);
+        });
+      },
+  */
+
+      excludeFile: function(file){
+        var ext=file.name.split('.').pop().toLowerCase();
+        if ($scope.$state.current.name=="validateFile") {
+          return $scope.queue.length>0 || ext=='json' ;
+        } else {
+          return ext=='json';
+        }
+      },
+
       onFilesDropped: function($files, $event) {
         $scope.progress.max=$files.length-1;
         $scope.progress.value=0;
@@ -126,10 +143,7 @@ module.exports=[
         // update total size and store file
         angular.forEach($files,function(file,i) {
           $scope.progress.value=i;
-          var ext=file.name.split('.').pop();
-          if (!config.exclude.find(function(type){
-            return type.mime==file.type || (ext && type.ext==ext);
-          })) {
+          if (!$scope.excludeFile(file)) {
             $scope.queue.size+=file.size;
             $scope.queue.push(file);
           } else {
@@ -139,7 +153,6 @@ module.exports=[
         $scope.computeHashes($scope.queue)
         .then($scope.removeDuplicates)
         .then(function(){
-          // dont ask me today why $rootScope does not work below but $scope.$root does
           $rootScope.$broadcast('filesReady',$scope.queue);
         })
         .finally($scope.hideOverlay);
@@ -151,21 +164,32 @@ module.exports=[
       }, // onFilesChanged
 
       remove: function(file){
-        if ($window.confirm('Are you sure ?')) {
+    //    if ($window.confirm('Are you sure ?')) {
+          var removed;
           $scope.queue.some(function(_file,i){
             if (file==_file){
               $scope.queue.splice(i,1);
+              removed=true;
               return true;
             }
           });
-        }
+          if (!removed) {
+            alert('Unexpected error');
+            window.location.reload();
+          }
+
+//        }
       },
 
       removeAll: function(){
+        window.location.reload();
+        return;
+        /*
 //        if ($window.confirm('Are you sure ?')) {
           $scope.queue.splice(0,$scope.queue.length);
           $scope.queue.size=0;
 //        }
+*/
       },
 
       /**
