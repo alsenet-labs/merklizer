@@ -31,11 +31,11 @@
 
     <div ng-if="$state.current.name=='anchor'" class="col-md-9" style="margin-bottom: 40px">
 
-      <h3>{{ queue.length }} file{{ queue.length>1 ? 's' : '' }} in queue ({{ queue.size/1024/1024|number:2 }}Mb)</h3>
+      <!--h3>{{ queue.length }} file{{ queue.length>1 ? 's' : '' }} in queue ({{ queue.size/1024/1024|number:2 }}Mb)</h3-->
 
       <div>
           <div type="button" class="btn btn-s btn-primary" ng-click="process()">
-            <span class="fa fa-link"></span> Process Files
+            <span class="fa fa-link"></span> Process {{queue.length}} file{{ queue.length > 1 ? 's' : '' }}
           </div>
           <div type="button" class="btn btn-s btn-danger" ng-click="removeAll()">
             <span class="fa fa-recycle"></span> Clear List
