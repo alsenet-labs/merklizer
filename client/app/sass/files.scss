@@ -1,7 +1,7 @@
 // @Author: guest
 // @Date:   2018-01-28T00:16:21+01:00
 // @Last modified by:   guest
-// @Last modified time: 2018-02-12T08:24:37+01:00
+// @Last modified time: 2018-02-22T13:53:03+01:00
 
 #merkle-files {
   .text-center {
@@ -15,14 +15,23 @@
   margin: -1em;  // because of border
   padding: 2em;
 
+  .nofilesyet {
+    overflow: hidden;
+    label h3 {
+      color: #bbb;
+      margin: 30000px;
+    }
+  }
+
   > .row {
     position: relative;
-    overflow: auto;
+    overflow: hidden;
     width: 100%;
 
     .table-wrapper {
       width: 100%;
       margin: 3em;
+      overflow: auto;
 
       table {
         th {
