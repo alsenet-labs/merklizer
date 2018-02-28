@@ -2,7 +2,7 @@
 Web app for computing Merkle trees and anchoring hashes to the open public blockchains
 
 __Under active development, don't use it for production yet.__
-  
+
 ## Copyright
  Copyright (c) 2018 ALSENET SA
 
@@ -27,9 +27,9 @@ __Under active development, don't use it for production yet.__
 ## ONLINE DEMO
 
   You can check the online demo here: [https://alsenet-labs.github.io/merklizer/dist/index.html](https://alsenet-labs.github.io/merklizer/dist/index.html)
-  
+
   Please note that the QRCode part is not yet functional.
-  
+
 # README
 
 The actual demo is hashing files using SHA512-256, building a Merkle
@@ -54,3 +54,13 @@ Provisions are made to allow anchoring data on other blockchains.
  gulp
 ```
 
+## Troubleshooting
+
+When running gulp and the maximum number of inotify watchers is set too low, the error below occurs during continuous integration initialization:
+```
+Error: watch /src/merklizer/node_modules/assert-plus/assert.js ENOSPC
+```
+In which case the limit must be raised with something like:
+```
+echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+```
