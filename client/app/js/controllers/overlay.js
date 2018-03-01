@@ -20,7 +20,6 @@
 *
 */
 
-
 'use strict';
 
 /**
@@ -73,6 +72,10 @@ module.exports=[
         $scope.showProgress=options.showProgress||(options.showProgress!==false && $scope.showProgress);
         $scope.hideDialog=(options.hideDialog==true);
         $scope.showButton=(options.showButton!=false);
+        if ($scope.showButton) {
+          $scope.onclick=options.onclick||$scope._onclick;
+          $scope.buttonText=options.buttonText||'Abort';
+        }
         $timeout(function(){
           $rootScope._showOverlay=true;
         });
@@ -82,7 +85,9 @@ module.exports=[
         $timeout(function(){
           $rootScope._showOverlay=false;
         });
-      }
+      },
+
+      _onclick: function(){window.location.reload()}
 
     }); // extend scope
 
