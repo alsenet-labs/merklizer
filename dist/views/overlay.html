@@ -5,7 +5,7 @@
         <div>
           <div>{{message}}</div>
           <div><progress ng-if="showProgress" max="{{progress.max}} value="{{progress.value}}"></progress></div>
-          <div ng-if="showButton" onclick="window.location.reload()" class="btn btn-danger">Abort</div>
+          <div ng-if="showButton" ng-click="onclick()" class="btn btn-danger">{{buttonText}}</div>
         </div>
       </div>
     </div>
