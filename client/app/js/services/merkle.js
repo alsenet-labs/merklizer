@@ -52,8 +52,8 @@ module.exports = [
         */
       },
 
-      hash: function hash(data){
-        return merkle._hash[merkle.hashType](data);
+      hash: function hash(data,hashType){
+        return merkle._hash[hashType||merkle.hashType](data);
       },
 
       hashToString: function hashToString(hash){
@@ -83,8 +83,7 @@ module.exports = [
         var result=new Uint8Array(hashLeft.byteLength+hashRight.byteLength);
         result.set(hashLeft,0);
         result.set(hashRight,hashLeft.byteLength);
-        var hash=merkle._hash[hashType||merkle.hashType](result);
-        return hash;
+        return merkle.hash(result,hashType);
       },
 
       compute: function compute(objectList){
@@ -178,7 +177,7 @@ module.exports = [
         if (
           !proof
           || !proof.operations
-          || !proof.operations.length
+          || !Array.isArray(proof.operations)
           || !proof.root
           || !proof.hash
         ) return false;
@@ -203,7 +202,7 @@ module.exports = [
           }
           if (merkle.debug) console.log(merkle.hashToString(hash))
         });
-        return hash.toString()==proof.root.toString();
+        return merkle.hashToString(hash)==merkle.hashToString(proof.root);
 
       }, // checkProof
 
