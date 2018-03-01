@@ -50,8 +50,10 @@ module.exports = [
     var service=this;
     angular.extend(service,{
       prefix: '',
+      blocksToGo: -1, // infinite
 
       cached_transactions: {},
+      cached_blocks: {},
 
       init: function(){
       }, // init
@@ -128,34 +130,138 @@ module.exports = [
                 to: ethService.account,
                 value: '0',
                 data: '0x'+service.prefix+merkle.getRoot(service.tree),
-                gas: '250000'
+                gas: '25000'
               })
-              .then(function loop(result){
-                console.log(result);
+              .then(function(result) {
                 service.showOverlay({
-                  message: 'Waiting for transaction block...',
+                  message: 'Waiting for receipt...',
                   showProgress: true,
                   showButton: true
                 });
-
-                return ethService.eth.getTransactionByHash(result)
-                .then(function(transaction){
-                  if (!transaction) {
+                var _q=$q.defer();
+                $timeout(function(){
+                  _q.resolve(result);
+                },10000);
+                return _q.promise;
+              })
+              .then(function getTransaction_loop(result,options){
+                console.log(result);
+                var stopHere=false;
+                var blocksToGo=service.blocksToGo;
+                return ethService.eth.getTransactionReceipt(result)
+                .then(function(receipt){
+                  if (!receipt || !receipt.blockNumber) {
                     var qq=$q.defer();
                     $timeout(function(){
-                      loop(result)
+                      getTransaction_loop(result)
                       .then(qq.resolve);
-                    },15000);
+                    },10000);
                     return qq.promise;
 
                   } else {
-                    console.log(JSON.stringify(transaction,false,4));
+                    if (receipt.status!=1) {
+                      throw new Error('Transaction failed !');
+                    }
+                    return receipt;
+                  }
+                })
+                .then(function waitNextBlocks(receipt, looping){
+                  if (!receipt) {
+                    console.log('huh?');
+                    return;
+                  }
+
+                  // maybe the receipt block number changed while waiting (?)
+                  if (options && options.blockNumber.eq(receipt.blockNumber)) {
+                    return receipt;
+                  }
+
+                  if (!looping) {
+                    service.showOverlay({
+                      message: 'Waiting for more blocks...',
+                      showProgress: true,
+                      showButton: false
+                    });
+                  }
+
+                  return ethService.eth.blockNumber()
+                  .then(function(blockNumber){
+                    if (stopHere) {
+                      return;
+                    }
+
+                    if (!receipt) {
+                      console.log('huh??');
+                      return;
+                    }
+
+                    var blocksCount=blockNumber.sub(receipt.blockNumber);
+                    console.log('blocks after: '+blocksCount);
+
+                    if ((service.blocksToGo>0 && blocksCount>=service.blocksToGo) || stopHere) {
+                      // just to be sure... maybe the transaction block number changed while waiting
+                      return getTransaction_loop(result,{blockNumber: receipt.blockNumber});
+
+                    } else {
+                      // wait more blocks
+                      var n;
+                      var message;
+
+                      if (service.blocksToGo>0) {
+                        if (blocksCount>0) {
+                          n=blocksToGo=service.blocksToGo-blocksCount;
+                        } else {
+                          n=blocksToGo;
+                        }
+                        message='Waiting for '+n+' more block'+(n>1?'s':'')+'...';
+
+                      } else {
+                        if (blocksCount>0) {
+                          message=blocksCount+' confirmation'+(blocksCount>1?'s':'')+' so far.';
+                        } else {
+                          message=null;
+                        }
+                      }
+
+                      var qqq=$q.defer();
+
+                      service.showOverlay({
+                        message: message,
+                        showProgress: true,
+                        showButton: true,
+                        buttonText: 'Stop',
+                        onclick: function(){
+                          stopHere=true;
+                          qqq.resolve(getTransaction_loop(result,{blockNumber: receipt.blockNumber}));
+                        }
+                      });
+
+                      $timeout(function(){
+                        waitNextBlocks(receipt,true)
+                        .then(qqq.resolve);
+                      },20000);
+                      return qqq.promise;
+                    }
+                  });
+
+                })
+                .then(function(receipt){
+                  if (!receipt) {
+                    console.log('huh');
+                    return $q.resolve();
+                  }
+                  console.log(JSON.stringify(receipt,false,4));
+                  return $q.resolve(receipt)
+                  .then(service.getTransactionBlock)
+                  .then(function(receipt){
                     pushAnchor({
                       type: 'ethereum',
                       networkId: parseInt(ethService.netId),
-                      transactionId: transaction.hash
+                      transactionId: receipt.transactionHash,
+                      blockId: receipt.block.hash,
+                      blockDate: service.getBlockDate(receipt.block)
                     });
-                  }
+                  });
                 });
               });
             });
@@ -231,6 +337,36 @@ module.exports = [
 
       }, // downloadArchive
 
+      getTransactionBlock: function(transaction,options){
+        // get block
+        if (transaction.block) {
+          return transaction;
+        } else {
+          if ((options&&options.cache) && service.cached_blocks[transaction.blockHash]) {
+            transaction.block=service.cached_blocks[transaction.blockHash];
+            return transaction;
+          }
+          var q;
+//          if (transaction.blockNumber) {
+//            q=ethService.eth.getBlockByNumber(transaction.blockNumber,false);
+//          } else {
+            q=ethService.eth.getBlockByHash(transaction.blockHash,false);
+//          }
+          return q.then(function(block){
+            if (options&&options.cache) {
+              service.cached_blocks[block.hash]=block;
+            }
+            transaction.block=block;
+            console.log(JSON.stringify(block,false,4));
+            return transaction;
+          })
+        }
+      },
+
+      getBlockDate: function(block) {
+        return new Date(block.timestamp*1000).toISOString();
+      },
+
       validate: function(file, options) {
         var q;
 
@@ -252,7 +388,7 @@ module.exports = [
             $window.alert('Hash mismatch between file and proof !');
           }
           file.proof.validated=false;
-          return q.resolve(false);
+          return $q.resolve(false);
         }
 
         // TODO: many anchors
@@ -290,34 +426,35 @@ module.exports = [
             }
 
             // get transaction
-            if (service.cached_transactions[anchor.transactionId]) {
+            if (options && options.cache && service.cached_transactions[anchor.transactionId]) {
               return service.cached_transactions[anchor.transactionId];
             } else {
               return ethService.eth.getTransactionByHash(anchor.transactionId)
               .then(function(transaction){
-                service.cached_transactions[anchor.transactionId]=transaction;
+                if (options && options.cache) {
+                  service.cached_transactions[anchor.transactionId]=transaction;
+                }
                 console.log(JSON.stringify(transaction,false,4));
                 return transaction;
               });
             }
-
           })
+
+          // get block
+          .then(service.getTransactionBlock)
+
+           // validate data
           .then(function(transaction){
-            // get block
-            if (transaction.block) {
-              return transaction;
-            } else {
-              return ethService.eth.getBlockByNumber(transaction.blockNumber,false)
-              .then(function(block){
-                transaction.block=block;
-                console.log(JSON.stringify(block,false,4));
-                return transaction;
-              })
+
+            // check block hash
+            if (transaction.block.hash!=anchor.blockId) {
+              throw new Error('Block hash mismatch !');
             }
 
-          })
-          .then(function(transaction){
-            transaction.block._date=new Date(transaction.block.timestamp*1000).toISOString();
+            // check block date
+            if (service.getBlockDate(transaction.block)!=anchor.blockDate) {
+              throw new Error('Block date mismatch !');
+            }
 
             anchor.transaction=transaction;
 
@@ -338,10 +475,13 @@ module.exports = [
               file.proof.root=merkle.stringToHash(root);
             }
 
+            // compare merkle roots
             if (transaction.input.slice(transaction.input.length-root.length)!=root) {
               file.proof.validated=false;
               throw new Error('Merkle root mismatch !');
             }
+
+            // check merkle proof
             var validated=merkle.checkProof(file.proof);
             file.proof.validated=validated;
             console.log(file.name+' validated: ',validated.toString());
