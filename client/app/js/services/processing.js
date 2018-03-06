@@ -368,8 +368,9 @@ module.exports = [
       },
 
       validate: function(file, options) {
+        options=options||{};
         var q;
-
+        
         if (!file.proof) {
           console.log('no merkle proof',file);
           if (!options.silent) {
@@ -382,7 +383,7 @@ module.exports = [
           return $q.resolve(file.proof.validated);
         }
 
-        if (merkle.hashToString(file.proof.hash)!=merkle.hashToString(file.hash)) {
+        if (file.hash && merkle.hashToString(file.proof.hash)!=merkle.hashToString(file.hash)) {
           console.log('hash mismatch between file and proof !',file);
           if (!options.silent) {
             $window.alert('Hash mismatch between file and proof !');
@@ -414,7 +415,7 @@ module.exports = [
 
           q=q.then(function() {
             // check default account again
-            return ethService.init();
+            return ethService.init(anchor.networkId);
 
           })
           .then(function(){

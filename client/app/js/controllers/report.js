@@ -21,14 +21,37 @@
 */
 'use strict';
 
-module.exports=(function(){
-  return {
-    enabled: true,
-    network: 'kovan',
-    publicProvider: {
-      mainnet: 'https://mainnet.infura.io',
-      kovan: 'https://kovan.infura.io'
-    }
+/**
+ * @ngdoc function
+ * @name merkleApp.controller:ReportCtrl
+ * @description
+ * # ReportCtrl
+ * Controller of the merkleApp
+ */
 
+module.exports=[
+  '$scope',
+  '$rootScope',
+  '$timeout',
+  function (
+    $scope,
+    $rootScope,
+    $timeout,
+  ) {
+    this.awesomeThings = [
+      'HTML5 Boilerplate',
+      'AngularJS',
+      'Karma'
+    ];
+
+    angular.extend($scope,{
+
+      init: function(){
+        $scope.proof=$scope.$stateParams.proof;
+        $scope.proof_txt=JSON.stringify($scope.$stateParams.proof,false,4);
+      }
+    });
+
+    $scope.init();
   }
-})();
+];

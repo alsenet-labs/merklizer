@@ -26,13 +26,17 @@ module.exports=[
   '$rootScope',
   '$state',
   '$stateParams',
+  '$window',
 
   function (
     $rootScope,
     $state,
-    $stateParams
+    $stateParams,
+    $window
   ) {
     $rootScope.$state=$state;
     $rootScope.$stateParams=$stateParams;
+    $rootScope.mobileApp=['http:','https:'].indexOf($window.document.location.protocol)<0;
+
   }
 ];

@@ -25,9 +25,9 @@
 
 /**
  * @ngdoc function
- * @name merkleApp.controller:OverlayCtrl
+ * @name merkleApp.controller:QRCodeCtrl
  * @description
- * # OverlayCtrl
+ * # QRCodeCtrl
  * Controller of the merkleApp
  */
 
@@ -35,12 +35,18 @@ module.exports=[
   '$scope',
   '$rootScope',
   '$window',
+  '$timeout',
+  '$q',
   'QRCodeService',
+  'processing',
   function (
     $scope,
     $rootScope,
     $window,
-    QRCodeService
+    $timeout,
+    $q,
+    QRCodeService,
+    processing
   ) {
     this.awesomeThings = [
       'HTML5 Boilerplate',
@@ -48,28 +54,96 @@ module.exports=[
       'Karma'
     ];
 
-  $scope.start = function() {
-      $scope.cameraRequested = true;
-  }
-
-  $scope.processURLfromQR = function (url) {
-    $scope.url = url;
-    $scope.cameraRequested = false;
-  }
-angular.extend($scope,{
-
-      scan: function(){
-        var video=$window.document.getElementById('qrvideo');
-        QRCodeService.scan({
-          video: video,
-          scanPeriod: 15
+    angular.extend($scope,{
+      init: function() {
+        $scope.$on('$destroy',function(){
+          QRCodeService.destroy(console.log);
         });
-        video.play();
+/*        $window.cordova.plugins.gizscanqrcode.scan(
+    {
+     "baseColor": "#4e8dec",
+
+     //bar
+     "title": "Scanner",
+     "barColor": "4e8dec",
+     "statusBarColor": "white",
+
+     //describe string
+     "describe": "Scan it",
+     "describeFontSize": "15",
+     "describeLineSpacing": "8",
+     "describeColor": "ffffff",
+
+     //scan border
+     "borderColor": "4e8dec",
+     "borderScale": "0.75",
+
+     //choose photo button
+     "choosePhotoEnable": "true",
+     "choosePhotoBtnTitle": "Open photo",
+     "choosePhotoBtnColor": "4e8dec",
+
+     //flashlight
+     "flashlightEnable": "false"
+    },
+    function (_result) {
+      console.log(result);
+      try {
+        var result=JSON.parse(_result);
+        if (result.resultCode==1) {
+          $timeout(function(){
+            $scope.callback(0,result.result);
+          });
+        }
+      } catch(e) {
+        $scope.$state.go('validate');
       }
-
-
-
+    },
+    function (error) {
+        console.log(error);
+    }
+);
+return;
+*/
+        QRCodeService.scan(function(err,text){
+//          $scope.$apply()
+          $timeout(function(){
+            $scope.callback(err,text);
+          });
+        });
+      },
+      callback: function(err, text) {
+        if (err) {
+          $scope.$root.$broadcast('showOverlay',{
+            message: text,
+            showButton: true,
+            buttonText: 'Retry'
+          });
+          return;
+        }
+        var proof;
+        try {
+          proof=JSON.parse(text);
+        } catch(e) {
+          $scope.$root.$broadcast('showOverlay',{
+            message: text,
+            showButton: true,
+            buttonText: 'Retry'
+          });
+          return;
+        }
+        $q.resolve({proof: proof})
+        .then(processing.validate)
+        .then(function(validated){
+          if (validated) {
+            $scope.$state.go('report',{proof: proof});
+          } else {
+            $scope.$state.go('validate');
+          }
+        });
+      }
     });
 
+    $scope.init();
   }
 ];

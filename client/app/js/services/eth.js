@@ -52,8 +52,13 @@ module.exports=[
         42: 'kovan'
       },
 
-      init: function(){
+      init: function(network){
         var provider;
+
+        if (!network) {
+          network=config.network;
+        }
+        network=service.network_name[network]||network;
 
         if (!service.eth) {
           if (config.provider)
@@ -75,11 +80,11 @@ module.exports=[
             q.resolve();
           })
           .catch(function(err){
-            if (eth.currentProvider.host==config.publicProvider) {
+            if (eth.currentProvider.host==config.publicProvider[network]) {
               q.reject(err);
             } else {
               console.log('Local service not found, falling back to public provider');
-              eth=service.eth=new Eth(new Eth.HttpProvider(config.publicProvider));
+              eth=service.eth=new Eth(new Eth.HttpProvider(config.publicProvider[network]));
               q.resolve();
             }
           });
@@ -91,6 +96,9 @@ module.exports=[
         .then(function(netId){
           service.netId=netId;
           console.log(service.network_description[netId]||'This is an unknown network.');
+          if (service.network_name[netId]!=network) {
+            throw new Error('You requested to connect on '+network+' but you were connected on '+service.network_name[netId]+' !');
+          }
         })
         .catch(console.log);
       } // init

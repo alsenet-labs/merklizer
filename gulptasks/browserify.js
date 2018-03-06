@@ -130,7 +130,7 @@ module.exports=function(options){
 
       });
       if (!options.watch) {
-        es.merge(tasks).on('end',options.callback);
+        return es.merge(tasks).on('end',options.callback);
       }
     });
   }

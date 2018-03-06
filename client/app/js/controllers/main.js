@@ -139,6 +139,10 @@ module.exports=[
       }, // validate
 
       filesReady: function(queue) {
+        if ($scope.$root.mobileApp) {
+          $scope.validate(queue[0]);
+          return;
+        }
         $scope.readProofs($scope.proofs)
         .then(function(proofs){
           // associate proof with file
