@@ -35,17 +35,15 @@ require('angular-ui-bootstrap');
 require('angular-files-drop');
 require('angular-smart-table');
 require('angular-file-saver');
-require('webcam/dist/webcam.min.js');
-require('bc-qr-reader');
+//require('webcam/dist/webcam.min.js');
+//require('bc-qr-reader');
 
 var app=angular.module('merkleApp',[
   'ui.router',
   'ui.bootstrap',
   'angular-files-drop',
   'smart-table',
-  'ngFileSaver',
-  'webcam',
-  'bcQrReader'
+  'ngFileSaver'
 ])
 .config(require('./config.js'))
 .run(require('./run.js'))
@@ -61,4 +59,5 @@ var app=angular.module('merkleApp',[
 .controller('MainCtrl',require('./controllers/main.js'))
 .controller('FilesCtrl',require('./controllers/files.js'))
 .controller('OverlayCtrl',require('./controllers/overlay.js'))
+.controller('ReportCtrl',require('./controllers/report.js'))
 .filter('prettyFileIcon',require('./filters/pretty-file-icon'))

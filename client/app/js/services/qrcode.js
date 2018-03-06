@@ -22,35 +22,87 @@
 
 'use strict';
 
-var Instascan=require('instascan');
-
 module.exports=[
   '$rootScope',
   '$q',
-  function($rootScope,$q){
+  '$window',
+  function(
+    $rootScope,
+    $q,
+    $window
+  ){
     var service=this;
+    var QRScanner=$window.QRScanner;
+
     angular.extend(service,{
-      scan: function(options){
-        var scanner=service.scanner=service.scanner || new Instascan.Scanner($.extend(true,{
-    //      mirror: false
-        },options.instascan));
-        scanner.addListener('scan',function scan_listener(content){
-          $rootScope.$broadcast('scan',content);
-          service.scanner.stop();
-          service.scanner=null;
-        });
-        Instascan.Camera.getCameras().then(function (cameras) {
-          if (cameras.length > 0) {
-            scanner.start(cameras[1]);
-          } else {
-            console.error('No cameras found.');
-            $window.alert('No cameras found.');
+
+      prepare: function(resolve,reject) {
+
+        QRScanner.prepare(onDone); // show the prompt
+
+        function onDone(err, status){
+          if (err) {
+           // here we can handle errors and clean up any loose ends.
+           console.error(err);
+           return reject(err);
           }
-        }).catch(function (e) {
-          console.error(e);
-          $window.alert('Unexpected error.');
+          if (status.authorized) {
+            // W00t, you have camera access and the scanner is initialized.
+            // QRscanner.show() should feel very fast.
+            return resolve();
+
+          } else if (status.denied) {
+            return reject();
+           // The video preview will remain black, and scanning is disabled. We can
+           // try to ask the user to change their mind, but we'll have to send them
+           // to their device settings with `QRScanner.openSettings()`.
+          } else {
+            return reject();
+            // we didn't get permission, but we didn't get permanently denied. (On
+            // Android, a denial isn't permanent unless the user checks the "Don't
+            // ask again" box.) We can ask again at the next relevant opportunity.
+          }
+        }
+      },
+
+      switchCamera: function(callback){
+        QRScanner.getStatus(function(camera){
+          if (camera.canChangeCamera) {
+            QRScanner.useCamera(1-camera.currentCamera,callback||function(){});
+          }
         });
-      } // scan
+      },
+
+      scan: function(callback){
+        new Promise(service.prepare)
+        .then(function(){
+          QRScanner.scan(function(err, text){
+            service.displayContents(err,text,callback);
+          });
+          window.document.querySelector('body').classList.add('scanning');
+          QRScanner.show();
+        });
+
+      },
+
+      destroy: function(callback){
+        QRScanner.destroy(callback);
+        window.document.querySelector('body').classList.remove('scanning');
+      },
+
+      displayContents: function displayContents(err, text, callback){
+        if(err){
+          console.log(err);
+          // an error occurred, or the scan was canceled (error code `6`)
+        } else {
+          QRScanner.destroy(function(status){
+            console.log(status);
+          });
+          window.document.querySelector('body').classList.remove('scanning');
+          if (!callback) alert(text);
+        }
+        if (callback) callback(err, text);
+      }
 
     });
   }

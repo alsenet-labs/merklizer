@@ -70,6 +70,15 @@ module.exports=[
       controller: 'QRCodeCtrl',
       controllerAs: 'qrcode'
     })
+    .state('report', {
+      url: '/report',
+      templateUrl: 'views/report.html',
+      controller: 'ReportCtrl',
+      controllerAs: 'report',
+      params: {
+        proof: null
+      }
+    });
 
   }
 ];
