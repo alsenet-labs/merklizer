@@ -59,52 +59,6 @@ module.exports=[
         $scope.$on('$destroy',function(){
           QRCodeService.destroy(console.log);
         });
-/*        $window.cordova.plugins.gizscanqrcode.scan(
-    {
-     "baseColor": "#4e8dec",
-
-     //bar
-     "title": "Scanner",
-     "barColor": "4e8dec",
-     "statusBarColor": "white",
-
-     //describe string
-     "describe": "Scan it",
-     "describeFontSize": "15",
-     "describeLineSpacing": "8",
-     "describeColor": "ffffff",
-
-     //scan border
-     "borderColor": "4e8dec",
-     "borderScale": "0.75",
-
-     //choose photo button
-     "choosePhotoEnable": "true",
-     "choosePhotoBtnTitle": "Open photo",
-     "choosePhotoBtnColor": "4e8dec",
-
-     //flashlight
-     "flashlightEnable": "false"
-    },
-    function (_result) {
-      console.log(result);
-      try {
-        var result=JSON.parse(_result);
-        if (result.resultCode==1) {
-          $timeout(function(){
-            $scope.callback(0,result.result);
-          });
-        }
-      } catch(e) {
-        $scope.$state.go('validate');
-      }
-    },
-    function (error) {
-        console.log(error);
-    }
-);
-return;
-*/
         QRCodeService.scan(function(err,text){
 //          $scope.$apply()
           $timeout(function(){
