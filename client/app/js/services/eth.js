@@ -36,6 +36,9 @@ module.exports=[
 
       enabled: config.enabled,
 
+      getTransactionURL: config.getTransactionURL,
+      getAddressURL: config.getAddressURL,
+
       network_description: {
         1: 'This is mainnet',
         2: 'This is the deprecated Morden test network.',

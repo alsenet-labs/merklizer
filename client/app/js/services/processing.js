@@ -23,6 +23,7 @@
 'use strict';
 
 var JSZip=require('jszip');
+const Buffer = require('safe-buffer').Buffer;
 
 module.exports = [
   '$q',
@@ -31,6 +32,7 @@ module.exports = [
   '$timeout',
   'merkle',
   'ethService',
+  'btcService',
   'tierion',
   'FileSaver',
   'pdfService',
@@ -42,6 +44,7 @@ module.exports = [
     $timeout,
     merkle,
     ethService,
+    btcService,
     tierion,
     FileSaver,
     pdfService
@@ -268,6 +271,39 @@ module.exports = [
           });
         }
 
+        if (btcService.enabled) {
+          service.showOverlay({
+            message: 'Submitting Bitcoin transaction...',
+            showProgress: false,
+            showButton: false
+          });
+
+          if (!q) {
+            q=$q.resolve();
+          }
+          q=q.then(function() {
+            return btcService.sendTransaction({
+              from: btcService.keyPair.getAddress(),
+              to: btcService.keyPair.getAddress(),
+              data: new Buffer(merkle.stringToHash(service.prefix+merkle.getRoot(service.tree)).buffer),
+              satoshis: 0,
+              fees: 10000
+            })
+            .then(function(receipt){
+              return btcService.getTransaction(receipt.txid)
+              .then(function(transaction){
+                console.log(transaction);
+                pushAnchor({
+                  type: 'bitcoin',
+                  networkId: btcService.networkId,
+                  transactionid: transaction.txid,
+                  date: new Date(transaction.time*1000).toISOString()
+                });
+              });
+            });
+          });
+        }
+
         q.then(function(){
           service.downloadArchive(queue);
         })
@@ -370,7 +406,7 @@ module.exports = [
       validate: function(file, options) {
         options=options||{};
         var q;
-        
+
         if (!file.proof) {
           console.log('no merkle proof',file);
           if (!options.silent) {
@@ -404,7 +440,7 @@ module.exports = [
           })
         ) {
           service.showOverlay({
-            message: 'Retrieving transaction...',
+            message: 'Retrieving ethereum transaction...',
             showProgress: true,
             showButton: true
           });
@@ -484,14 +520,42 @@ module.exports = [
 
             // check merkle proof
             var validated=merkle.checkProof(file.proof);
-            file.proof.validated=validated;
-            console.log(file.name+' validated: ',validated.toString());
+            anchor.validated=validated;
+            console.log(file.name+' validated on ethereum: ',validated.toString());
             return validated;
 
           });
         }
+        if (
+          btcService.enabled
+          && file.proof.anchors.find(function(_anchor){
+            if (_anchor.type=='bitcoin') {
+              anchor=_anchor;
+              return true;
+            }
+          })
+        ) {
+          service.showOverlay({
+            message: 'Retrieving bitcoin transaction...',
+            showProgress: true,
+            showButton: true
+          });
 
-        return q.then(function(validated){
+          if (!q) {
+            q=$q.resolve();
+          }
+
+          q=q.then(function() {
+            return btcService.getTransaction(anchor.transactionId)
+            .then(function(transaction){
+              console.log(transaction);
+            });
+          });
+        }
+
+        return q.then(function(){
+          return true;
+        }).then(function(validated){
           service.showOverlay({
             message: '',
             showProgress: false,
@@ -507,6 +571,7 @@ module.exports = [
         .then(function(validated){
           if (!options.silent) {
             $window.alert('The proof was '+(validated?'successfuly':'NOT')+' validated !');
+            $scope.$state.go('report',{proof: proof});
           }
           return validated;
 
@@ -584,17 +649,21 @@ module.exports = [
         return q.promise.then(function(){
           var failures=0;
           files.forEach(function(file){
-            if (file.proof && !file.proof.validated) {
-              ++failures;
+            if (file.proof) {
+              if (!file.proof.validated) {
+                ++failures;
+              }
             }
           });
 
           if (!failures) {
             if (count) {
-              $window.alert('Validation was successful.');
+//              $window.alert('Validation was successful.');
+              $rootScope.$state.go('report',{files: files});
             }
           } else {
             $window.alert(failures+' file'+(failures>1?'s':'')+' could not be validated.');
+            $rootScope.$state.go('report',{files: files});
           }
         });
 

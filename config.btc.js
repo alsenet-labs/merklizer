@@ -23,17 +23,11 @@
 
 module.exports=(function(){
   return {
-    enabled: false,
-    network: 'kovan',
-    publicProvider: {
-      mainnet: 'https://mainnet.infura.io',
-      kovan: 'https://kovan.infura.io'
-    },
-    getTransactionURL: function(network,txid){
-      return 'https://'+((network!='mainnet')?network+'.':'')+'etherscan.io/tx/'+txid;
-    },
-    getAddressURL: function(network,addr){
-      return 'https://'+((network!='mainnet')?network+'.':'')+'etherscan.io/address/'+addr;
+    enabled: true,
+    network: 'testnet',
+    apiUrl: 'https://testnet.blockexplorer.com/api/',
+    key: {
+      private: '00000000000000000000000'
     }
   }
 })();
