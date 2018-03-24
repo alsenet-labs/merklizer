@@ -1,3 +1,11 @@
 <div>
-  <pre> {{ proof_txt }} </pre>
+  <div class="report" ng-repeat="file in $stateParams.files">
+    <div ng-if="file.proof && file.proof.validated" class="proof">
+      The Merlke proof for file "{{::file.name}}" has been successfuly validated.
+      <div class="anchor" ng-repeat="anchor in file.proof.anchors">
+        <div anchor="anchor"></div>
+      </div>
+      <pre> {{ file.proof | stringify }} </pre>
+    </div>
+  </div>
 </div>

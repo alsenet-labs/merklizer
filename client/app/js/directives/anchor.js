@@ -19,37 +19,25 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
-'use strict';
 
-/**
- * @ngdoc function
- * @name merkleApp.controller:ReportCtrl
- * @description
- * # ReportCtrl
- * Controller of the merkleApp
- */
+"use strict";
 
 module.exports=[
-  '$scope',
-  '$rootScope',
-  '$timeout',
-  function (
-    $scope,
-    $rootScope,
-    $timeout,
-  ) {
-    this.awesomeThings = [
-      'HTML5 Boilerplate',
-      'AngularJS',
-      'Karma'
-    ];
-
-    angular.extend($scope,{
-
-      init: function(){
-      }
-    });
-
-    $scope.init();
+  '$parse',
+  'ethService',
+  function($parse,ethService) {
+    return {
+      restrict: 'A',
+      link: function (scope, element, attrs) {
+        var anchor=scope.anchor=$parse(attrs.anchor)(scope);
+        switch(anchor.type) {
+          case 'ethereum':
+            scope.networkName=ethService.network_name[anchor.networkId]||anchor.networkId;
+            scope.transactionURL=ethService.getTransactionURL(scope.networkName,anchor.transactionId);
+            scope.addressURL=ethService.getAddressURL(scope.networkName,anchor.transaction.from);
+        }
+      },
+      templateUrl: '/views/anchor.html'
+    };
   }
-];
+]

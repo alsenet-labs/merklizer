@@ -19,37 +19,19 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
+
 'use strict';
 
-/**
- * @ngdoc function
- * @name merkleApp.controller:ReportCtrl
- * @description
- * # ReportCtrl
- * Controller of the merkleApp
- */
-
 module.exports=[
-  '$scope',
-  '$rootScope',
-  '$timeout',
-  function (
-    $scope,
-    $rootScope,
-    $timeout,
-  ) {
-    this.awesomeThings = [
-      'HTML5 Boilerplate',
-      'AngularJS',
-      'Karma'
-    ];
-
-    angular.extend($scope,{
-
-      init: function(){
+  function(){
+    return function(obj) {
+      var json;
+      try {
+        json=JSON.stringify(obj,false,4);
+      } catch(e) {
+        json=e.message;
       }
-    });
-
-    $scope.init();
+      return json;
+    }
   }
 ];
