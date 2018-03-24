@@ -1,6 +1,6 @@
 <div ng-cloak ng-controller="FilesCtrl" id="merkle-files" ng-cloak  files-read="false" files-drop="onFilesDropped($files, $event)">
 
-  <div class="dashes" ng-if="!$root._showOverlay"></div>
+  <div class="dashes" ng-if="!$root.mobileApp && !$root._showOverlay"></div>
 
   <div class="nofilesyet d-flex h-100 w-100 justify-content-center" ng-if="!queue.length">
     <div class="row align-self-center" ng-if="true">
@@ -24,6 +24,7 @@
           <input type="file" accept=".json" style="display: none"  ng-model="selection" on-change="onFilesChanged($event)" />
         </div>
       </label>
+      <input id="proofFileInput" type="file" accept=".json" style="display: none"  ng-model="selection" on-change="onFilesChanged($event)" />
 
       <!--input id="proofFileInput" type="file" multiple accept="application/json" style="display: none" ng-model="proof" on-change="$root.$broadcast('proofChanged',$event);" /-->
 
@@ -46,7 +47,7 @@
     </div-->
 
     </div>
-    <div class="table-wrapper">
+    <div ng-if="!mobileApp" class="table-wrapper">
     <table ng-if="showFileList" st-safe-src="queue" st-table="rows" class="table table-striped">
       <thead>
         <tr>

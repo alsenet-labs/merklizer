@@ -1,7 +1,4 @@
-// @Author: guest
-// @Date:   2018-01-28T00:16:21+01:00
-// @Last modified by:   guest
-// @Last modified time: 2018-02-22T13:53:03+01:00
+// @Last modified time: 2018-03-25T02:13:04+07:00
 
 #merkle-files {
   .text-center {
@@ -38,10 +35,12 @@
           .hash {
             text-align: center;
             width: 100%;
+            display: none;
           }
         }
 
         td.hash {
+          display: none;
           font-family: monospace;
         }
 

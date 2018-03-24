@@ -76,7 +76,7 @@ module.exports=[
       controller: 'ReportCtrl',
       controllerAs: 'report',
       params: {
-        proof: null
+        files: null
       }
     });
 
