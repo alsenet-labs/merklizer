@@ -1,11 +1,19 @@
-<div>
+<div ng-cloak>
   <div class="report" ng-repeat="file in $stateParams.files">
     <div ng-if="file.proof && file.proof.validated" class="proof">
-      The Merlke proof for file "{{::file.name}}" has been successfuly validated.
+      <p>The file "{{::file.name}}" looks genuine.</p>
+      <p>The following facts have been established conclusively:<p>
+      <p>The file hash match the {{::file.proof.hashType}} hash stored in the proof ({{::file.proof.hash}})</p>
+      <p>The Merkle root ({{::file.proof.root}}) has been recomputed sucessfuly from the file hash after the following operations:</p>
+      <pre>
+        {{ ::file.proof.operations }}
+      </pre>
+      <p>Finally the Merkle root has been retrieved in the transactions mentioned and listed below:</p>
       <div class="anchor" ng-repeat="anchor in file.proof.anchors">
         <div anchor="anchor"></div>
       </div>
-      <pre> {{ file.proof | stringify }} </pre>
     </div>
+    <p>You should now verify that the account numbers are indeed owned by the competent authority.</p>
+    <pre> {{ file.proof | stringify }} </pre>
   </div>
 </div>

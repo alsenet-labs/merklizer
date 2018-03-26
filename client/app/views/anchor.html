@@ -1,21 +1,21 @@
 <div class="anchor">
-  The merkle root was anchored on
-  <span class="anchor-date">
-    {{::anchor.blockDate | date : 'medium' : 'UTC' }}
-  </span>
-  on
   <span class="anchor-type">
     {{::anchor.type}}
   </span>
-  ({{::networkName}})
-  <br />
-  by the owner of account
-  <a ng-href="{{::addressURL}}" target="address" title="Check address details">
-    {{::anchor.transaction.from}}
-  </a>
-  <br />
-  in transaction
+  transaction ({{::networkName}}):
   <a ng-href="{{::transactionURL}}" target="transaction" title="Check transaction details">
     {{::anchor.transactionId}}
   </a>
+  <br />
+  dated
+  <span class="anchor-date">
+    {{::anchor.blockDate | date : 'medium' : 'UTC' }}
+  </span>
+  <br />
+  Issued by the owner of account
+  <a ng-href="{{::addressURL}}" target="address" title="Check address details">
+    {{::from}}
+  </a>
+  <br />
+
 </div>

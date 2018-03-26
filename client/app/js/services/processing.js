@@ -289,15 +289,31 @@ module.exports = [
               satoshis: 0,
               fees: 10000
             })
-            .then(function(receipt){
+            .then(function getBitcoinTransaction_loop(receipt){
+              service.showOverlay({
+                message: 'Waiting for Bitcoin transaction confirmation...',
+                showProgress: false,
+                showButton: false
+              });
               return btcService.getTransaction(receipt.txid)
               .then(function(transaction){
                 console.log(transaction);
+                if (transaction.confirmations<1) {
+                  var qq=$q.defer();
+                  $timeout(function(){
+                    getBitcoinTransaction_loop(receipt)
+                    .then(qq.resolve)
+                    .catch(qq.reject);
+                  },30000);
+                  return qq.promise;
+
+                }
                 pushAnchor({
                   type: 'bitcoin',
                   networkId: btcService.networkId,
-                  transactionid: transaction.txid,
-                  date: new Date(transaction.time*1000).toISOString()
+                  transactionId: transaction.txid,
+                  blockId: transaction.blockhash,
+                  blockDate: new Date(transaction.blocktime*1000).toISOString()
                 });
               });
             });
@@ -405,7 +421,6 @@ module.exports = [
 
       validate: function(file, options) {
         options=options||{};
-        var q;
 
         if (!file.proof) {
           console.log('no merkle proof',file);
@@ -428,28 +443,35 @@ module.exports = [
           return $q.resolve(false);
         }
 
+        var promises=[];
+        file.proof.anchors.forEach(function(anchor){
+          switch(anchor.type) {
+            case 'ethereum':
+              if (ethService.enabled) {
+                anchor.validated=false;
+                promises.push(validateEthereumAnchor(anchor));
+              }
+              break;
+            case 'bitcoin':
+              if (btcService.enabled) {
+                anchor.validated=false;
+                promises.push(validateBitcoinAnchor(anchor));
+              }
+              break;
+          }
+        });
+
         // TODO: many anchors
-        var anchor;
-        if (
-          ethService.enabled
-          && file.proof.anchors.find(function(_anchor){
-            if (_anchor.type=='ethereum') {
-              anchor=_anchor;
-              return true;
-            }
-          })
-        ) {
+        function validateEthereumAnchor(anchor) {
+          var q=$q.resolve();
+
           service.showOverlay({
             message: 'Retrieving ethereum transaction...',
             showProgress: true,
             showButton: true
           });
 
-          if (!q) {
-            q=$q.resolve();
-          }
-
-          q=q.then(function() {
+          return q.then(function() {
             // check default account again
             return ethService.init(anchor.networkId);
 
@@ -494,67 +516,104 @@ module.exports = [
             }
 
             anchor.transaction=transaction;
+            return validateAnchor(file, anchor);
 
-            service.showOverlay({
-              message: 'Checking Merkle proof...',
-              showProgress: true,
-              showButton: true
-            });
-
-            // check merkle root
-            var root=file.proof.root;
-
-            if (typeof root != 'string') {
-              // allow validating files just processed
-              root=merkle.hashToString(root);
-            } else {
-              // final comparison expects Uint8Array
-              file.proof.root=merkle.stringToHash(root);
-            }
-
-            // compare merkle roots
-            if (transaction.input.slice(transaction.input.length-root.length)!=root) {
-              file.proof.validated=false;
-              throw new Error('Merkle root mismatch !');
-            }
-
-            // check merkle proof
-            var validated=merkle.checkProof(file.proof);
-            anchor.validated=validated;
-            console.log(file.name+' validated on ethereum: ',validated.toString());
-            return validated;
 
           });
-        }
-        if (
-          btcService.enabled
-          && file.proof.anchors.find(function(_anchor){
-            if (_anchor.type=='bitcoin') {
-              anchor=_anchor;
-              return true;
-            }
-          })
-        ) {
+        } // validateEthereumAnchor
+
+        function validateAnchor(file, anchor) {
+          service.showOverlay({
+            message: 'Checking Merkle proof...',
+            showProgress: true,
+            showButton: true
+          });
+
+          // check file hash
+          if (merkle.hashToString(file.hash)!=file.proof.hash) {
+            throw new Error('File hash mismatch !');
+          }
+
+          // check merkle root
+          var root=file.proof.root;
+
+          if (typeof root != 'string') {
+            // allow validating files just processed
+            root=merkle.hashToString(root);
+          } else {
+            // final comparison expects Uint8Array
+            file.proof.root=merkle.stringToHash(root);
+          }
+
+          // compare merkle roots
+          var txroot;
+          switch(anchor.type) {
+            case 'ethereum':
+              txroot=anchor.transaction.input.slice(anchor.transaction.input.length-root.length);
+              break;
+            case 'bitcoin':
+              anchor.transaction.vout.some(function(out){
+                if (out.value==0) {
+                  var script=out.scriptPubKey.asm.split(' ');
+                  if (script[0]=='OP_RETURN') {
+                    txroot=script[1];
+                    return true;
+                  }
+                }
+              });
+              break;
+          }
+
+          if (txroot!=root) {
+            throw new Error('Merkle root mismatch !');
+          }
+
+          // check merkle proof
+          var validated=merkle.checkProof(file.proof);
+          anchor.validated=validated;
+          console.log(file.name+' validated on '+anchor.type+'('+anchor.networkId+'): ',validated.toString());
+          return validated;
+        } // validateAnchor
+
+        function validateBitcoinAnchor(anchor){
           service.showOverlay({
             message: 'Retrieving bitcoin transaction...',
             showProgress: true,
             showButton: true
           });
 
-          if (!q) {
-            q=$q.resolve();
+          // check network id
+          if (btcService.networkId!=anchor.networkId) {
+            return $q.reject(new Error('You are connected on '+btcService.networkId+' but the Merkle root has been anchored to '+anchor.networkId));
           }
 
-          q=q.then(function() {
+          return $q.resolve().then(function() {
             return btcService.getTransaction(anchor.transactionId)
             .then(function(transaction){
               console.log(transaction);
+              anchor.transaction=transaction;
+              // compare timestamp
+              if (anchor.blockDate!=new Date(transaction.blocktime*1000).toISOString()) {
+                throw new Error('Bitcoin block date mismatch');
+              }
+              if (anchor.blockId!=transaction.blockhash) {
+                throw new Error('Bitcoin block hash mismatch');
+              }
+              return validateAnchor(file,anchor);
             });
           });
         }
 
-        return q.then(function(){
-          return true;
+        return $q.all(promises).then(function(){
+          var validated=false;
+          file.proof.anchors.some(function(anchor){
+            if (anchor.validated!==undefined) {
+              validated=anchor.validated;
+              return !validated;
+            }
+          });
+          file.proof.validated=validated;
+          return validated;
         }).then(function(validated){
           service.showOverlay({
             message: '',
