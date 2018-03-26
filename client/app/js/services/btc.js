@@ -28,28 +28,38 @@ const request = require('request');
 
 module.exports=[
   '$q',
+  '$window',
   function(
-    $q
+    $q,
+    $window
   ){
     var service=this;
     var btc;
 
     angular.extend(service,{
 
+      enabled: config.enabled,
+
       key: {
         private: config.key.private,
         public: config.key.public
       },
 
-      enabled: config.enabled,
+      getTransactionURL: config.getTransactionURL,
+      getAddressURL: config.getAddressURL,
+
 
       init: function(){
-        service.networkId=config.network;
-        service.network=bitcoin.networks[config.network];
-        service.keyPair=new bitcoin.ECPair.fromWIF(service.key.private,service.network);
-        service.key.public=service.keyPair.getAddress();
-        service.getUnspentOutputs().then(console.log)
-        service.getBalance().then(console.log);
+        try {
+          service.networkId=config.network;
+          service.network=bitcoin.networks[config.network];
+          if (!service.network) throw new Error('unkonwn network: '+config.network);
+          if (!service.key.private) throw new Error('config.key.private cannot be null.');
+          service.keyPair=new bitcoin.ECPair.fromWIF(service.key.private,service.network);
+          service.key.public=service.keyPair.getAddress();
+        } catch(e) {
+          $window.alert('Could not initialize Bitcoin wallet, check config.btc.js. Error message was: "'+e.message+'"');
+        }
       },
 
       getUnspentOutputs: function(){

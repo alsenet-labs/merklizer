@@ -25,7 +25,12 @@
 module.exports=[
   '$parse',
   'ethService',
-  function($parse,ethService) {
+  'btcService',
+  function(
+    $parse,
+    ethService,
+    btcService
+  ) {
     return {
       restrict: 'A',
       link: function (scope, element, attrs) {
@@ -34,7 +39,15 @@ module.exports=[
           case 'ethereum':
             scope.networkName=ethService.network_name[anchor.networkId]||anchor.networkId;
             scope.transactionURL=ethService.getTransactionURL(scope.networkName,anchor.transactionId);
-            scope.addressURL=ethService.getAddressURL(scope.networkName,anchor.transaction.from);
+            scope.from=anchor.transaction.from;
+            scope.addressURL=ethService.getAddressURL(scope.networkName,scope.from);
+            break;
+          case 'bitcoin':
+          // TODO: in the case theres more than one input maybe it is necessary to verify they share the same address
+            scope.from=anchor.transaction.vin[0].addr;
+            scope.networkName=btcService.networkId;
+            scope.transactionURL=btcService.getTransactionURL(scope.networkName,anchor.transactionId);
+            scope.addressURL=btcService.getAddressURL(scope.networkName,scope.from);
         }
       },
       templateUrl: '/views/anchor.html'

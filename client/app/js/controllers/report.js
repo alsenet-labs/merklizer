@@ -33,10 +33,12 @@ module.exports=[
   '$scope',
   '$rootScope',
   '$timeout',
+  'merkle',
   function (
     $scope,
     $rootScope,
     $timeout,
+    merkle
   ) {
     this.awesomeThings = [
       'HTML5 Boilerplate',
@@ -47,6 +49,13 @@ module.exports=[
     angular.extend($scope,{
 
       init: function(){
+        if (!$scope.$stateParams.files || !$scope.$stateParams.files.length) {
+          $scope.$state.go('validate');
+          return;
+        }
+        angular.forEach($scope.$stateParams.files,function(file){
+          file.proof.root=merkle.hashToString(file.proof.root);
+        });
       }
     });
 

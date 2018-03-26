@@ -23,7 +23,7 @@
 
 module.exports=(function(){
   return {
-    enabled: false,
+    enabled: true,
     network: 'kovan',
     publicProvider: {
       mainnet: 'https://mainnet.infura.io',

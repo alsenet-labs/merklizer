@@ -27,7 +27,14 @@ module.exports=(function(){
     network: 'testnet',
     apiUrl: 'https://testnet.blockexplorer.com/api/',
     key: {
-      private: '00000000000000000000000'
+      public: 'n4RXsd77ahQc4SMHucEch4aVr42Jd2tLdR',
+      private: 'cV1XdpbCu5jBqrLk38Xcxn4JeJ3YpMwrSzTuCuYVnGx6JHmMZCs4'
+    },
+    getTransactionURL: function(network,txid){
+      return 'https://'+((network!='bitcoin')?network+'.':'')+'blockexplorer.com/tx/'+txid;
+    },
+    getAddressURL: function(network,addr){
+      return 'https://'+((network!='bitcoin')?network+'.':'')+'blockexplorer.com/address/'+addr;
     }
   }
 })();
