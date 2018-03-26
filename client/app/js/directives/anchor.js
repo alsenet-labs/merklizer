@@ -50,7 +50,7 @@ module.exports=[
             scope.addressURL=btcService.getAddressURL(scope.networkName,scope.from);
         }
       },
-      templateUrl: '/views/anchor.html'
+      templateUrl: 'views/anchor.html'
     };
   }
 ]
