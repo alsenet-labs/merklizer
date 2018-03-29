@@ -54,7 +54,9 @@ module.exports=[
           return;
         }
         angular.forEach($scope.$stateParams.files,function(file){
-          file.proof.root=merkle.hashToString(file.proof.root);
+          if (file.proof) {
+            file.proof.root=merkle.hashToString(file.proof.root);
+          }
         });
       }
     });

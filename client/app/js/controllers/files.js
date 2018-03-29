@@ -64,7 +64,7 @@ module.exports=[
       mimeTypes: '',
       isHTML5: true,
       queue: [],
-      showFileList: true,
+      showFileList: false,
       itemsByPage: 10,
       progress: {
         max: 0,
@@ -126,11 +126,7 @@ module.exports=[
 
       excludeFile: function(file){
         var ext=file.name.split('.').pop().toLowerCase();
-        if ($scope.$state.current.name=="validateFile") {
-          return $scope.queue.length>0 || ext=='json' ;
-        } else {
-          return ext=='json';
-        }
+        return ext=='json';
       },
 
       onFilesDropped: function($files, $event) {
