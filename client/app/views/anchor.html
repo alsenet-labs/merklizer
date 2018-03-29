@@ -1,13 +1,10 @@
-<div class="anchor">
-  <span class="anchor-type">
-    {{::anchor.type}}
-  </span>
-  transaction ({{::networkName}}):
+<div class="anchor" ng-cloak>
+  <span class="anchor-type">{{::anchor.type}}</span> transaction ({{::networkName}}):
   <a ng-href="{{::transactionURL}}" target="transaction" title="Check transaction details">
     {{::anchor.transactionId}}
   </a>
   <br />
-  dated
+  Dated
   <span class="anchor-date">
     {{::anchor.blockDate | date : 'medium' : 'UTC' }}
   </span>

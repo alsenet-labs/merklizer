@@ -2,7 +2,7 @@
 
   <div class="dashes" ng-if="!$root.mobileApp && !$root._showOverlay"></div>
 
-  <div class="nofilesyet d-flex h-100 w-100 justify-content-center" ng-if="!queue.length">
+  <div class="nofilesyet d-flex h-100 w-100 justify-content-center" ng-if="!queue.length || !showFileList">
     <div class="row align-self-center" ng-if="true">
       <label data-toogle="tooltip" title="Click or drop files here">
         <h3 class="text-nowrap">Click or drop files here.</h3>
@@ -11,7 +11,7 @@
     </div>
  </div>
 
-  <div class="row" ng-class="{blur: $root._showOverlay}" ng-if="queue.length">
+  <div class="row" ng-class="{blur: $root._showOverlay}" ng-if="queue.length && showFileList">
 
     <div class="col-md-3">
       <label type="button" class="btn btn-primary btn-file">
@@ -47,7 +47,7 @@
     </div-->
 
     </div>
-    <div ng-if="!mobileApp" class="table-wrapper">
+    <div ng-if="showFileList" class="table-wrapper">
     <table ng-if="showFileList" st-safe-src="queue" st-table="rows" class="table table-striped">
       <thead>
         <tr>
