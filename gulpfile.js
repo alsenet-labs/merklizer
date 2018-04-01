@@ -91,6 +91,7 @@ gulp.task('default', function() {
     'copy',
     'sass',
     'watch',
+    'browserify',
     'watchify',
     'browserSync'
 

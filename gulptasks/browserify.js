@@ -129,6 +129,8 @@ module.exports=function(options){
                 console.log('-> bundling '+filename+'...');
                 rebundle(filename,bundler);
             });
+            options.callback();
+            return;
         }
 
         return rebundle(filename,bundler);
