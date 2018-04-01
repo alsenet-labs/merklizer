@@ -84,6 +84,14 @@ module.exports=[
           $scope.filesReady(files);
         });
 
+        $scope.$on('filesValidated',function(event,files){
+          if (files.find(function(file){
+            return (file.proof && file.proof.validated!=undefined);
+          })) {
+            $scope.$state.go('report',{files: files});
+          }
+        });
+
         $scope.$on('showAnchors',function(event,file){
           processing.showAllAnchors(file.proof.anchors);
         });
@@ -91,6 +99,7 @@ module.exports=[
         $scope.$on('showProof',function(event,file){
           processing.showProof(file.proof,file.name+'.json');
         });
+
 
       }, // init
 
@@ -139,10 +148,6 @@ module.exports=[
       }, // validate
 
       filesReady: function(queue) {
-        if ($scope.$root.mobileApp) {
-          $scope.validate(queue[0]);
-          return;
-        }
         $scope.readProofs($scope.proofs)
         .then(function(proofs){
           // associate proof with file

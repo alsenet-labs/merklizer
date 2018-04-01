@@ -1,8 +1,11 @@
 <div ng-cloak class="report-wrapper">
   <div class="report">
     <div class="file" ng-repeat="file in $stateParams.files">
-      <div class="details" ng-if="file.proof && file.proof.validated" class="proof">
-        <p>The file "{{::file.name}}" looks genuine.</p>
+      <div class="details" ng-if="file.proof && !file.proof.validated">
+        <p class="status">The file "{{::file.name}}" could not be validated.</p>
+      </div>
+      <div class="details" ng-if="file.proof && file.proof.validated">
+        <p class="status">The file "{{::file.name}}" looks genuine.</p>
         <hr />
         <div>The following facts have been established conclusively:</div>
         <ul>

@@ -630,7 +630,6 @@ module.exports = [
         .then(function(validated){
           if (!options.silent) {
             $window.alert('The proof was '+(validated?'successfuly':'NOT')+' validated !');
-            $scope.$state.go('report',{proof: proof});
           }
           return validated;
 
@@ -706,6 +705,8 @@ module.exports = [
         })();
 
         return q.promise.then(function(){
+          $rootScope.$broadcast('filesValidated',files);
+/*
           var failures=0;
           files.forEach(function(file){
             if (file.proof) {
@@ -724,6 +725,7 @@ module.exports = [
             $window.alert(failures+' file'+(failures>1?'s':'')+' could not be validated.');
             $rootScope.$state.go('report',{files: files});
           }
+*/
         });
 
       } // validateAll

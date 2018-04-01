@@ -2,7 +2,7 @@
 
   <div class="dashes" ng-if="!$root.mobileApp && !$root._showOverlay"></div>
 
-  <div class="nofilesyet d-flex h-100 w-100 justify-content-center" ng-if="!queue.length || !showFileList">
+  <div class="nofilesyet d-flex h-100 w-100 justify-content-center" ng-if="!$root._showOverlay && (!queue.length || !showFileList)">
     <div class="row align-self-center" ng-if="true">
       <label data-toogle="tooltip" title="Click or drop files here">
         <h3 class="text-nowrap">Click or drop files here.</h3>
