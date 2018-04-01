@@ -26,9 +26,7 @@ __Under active development, don't use it for production yet.__
 
 ## ONLINE DEMO
 
-  You can check the online demo here: [https://alsenet-labs.github.io/merklizer/dist/index.html](https://alsenet-labs.github.io/merklizer/dist/index.html)
-
-  Please note that the QRCode part is not yet functional.
+  You can check the online demo here: [https://alsenet-labs.github.io/merklizer](https://alsenet-labs.github.io/merklizer)
 
 # README
 
