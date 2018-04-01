@@ -67,12 +67,13 @@ gulp.task('sass', function () {
     .pipe(gulp.dest('./client/app/css/'));
 });
 
-gulp.task('browserify', require('./gulptasks/browserify.js')({
-  callback: callback
+gulp.task('browserify', require('./gulptasks/browserify.js')());
+
+gulp.task('browserify-ugly', require('./gulptasks/browserify.js')({
+  uglify: true
 }));
 
 gulp.task('watchify', require('./gulptasks/browserify.js')({
-  callback: callback,
   watch: true
 }));
 
@@ -96,12 +97,29 @@ gulp.task('default', function() {
 	);
 });
 
-gulp.task('build', function(){
-	return runSequence(
+gulp.task('build', function(callback){
+	runSequence(
 		'copy',
 		'sass',
 		'browserify',
-		'dist'
+		'dist',
+    function(err){
+      if (err) console.log(err.message);
+      callback(err);
+    }
+	);
+});
+
+gulp.task('build-ugly', function(callback){
+	runSequence(
+		'copy',
+		'sass',
+		'browserify-ugly',
+		'dist',
+    function(err){
+      if (err) console.log(err.message);
+      callback(err);
+    }
 	);
 });
 

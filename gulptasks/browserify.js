@@ -52,8 +52,9 @@ module.exports=function(options){
 
       if (err) return options.callback(err);
 
+      var _watchify=(options && options.watch)?watchify:function(e){return e};
       var tasks=files.map(function(filename){
-        var bundler = watchify(
+        var bundler = _watchify(
           browserify({
             entries: [filename]
           },{
@@ -100,23 +101,27 @@ module.exports=function(options){
               }
             }]],
             sourceMaps: true
-        }));
+          })
+        );
 
         function rebundle(filename,bundler) {
-            return bundler
+            var stream=bundler
                 .bundle()
                 .on('error', function (err) {
                     console.error(err);
-                    this.emit('end');
+                    this.emit('end',err);
                 })
                 .pipe(source('build.js'))
                 .pipe(buffer())
                 .pipe(rename(filename.replace(/\.js$/,'\.min.js')))
-                .pipe(sourcemaps.init({loadMaps: true}))
-//                .pipe(uglify())
+                .pipe(sourcemaps.init({loadMaps: true}));
+            if (options.uglify) {
+              stream=stream.pipe(uglify());
+            }
+            return stream
                 .pipe(sourcemaps.write('./'))
                 .pipe(debug({title: 'processed:'}))
-                .pipe(gulp.dest('./'));
+                .pipe(gulp.dest('./'))
         }
 
         if (options.watch) {
@@ -130,12 +135,14 @@ module.exports=function(options){
 
       });
       if (!options.watch) {
-        return es.merge(tasks).on('end',options.callback);
+        es.merge(tasks).on('end',options.callback);
       }
     });
   }
 
-  return function() {
+  return function(callback) {
+    options=options||{};
+    options.callback=callback||function(){};
     return compile(options)
   }
 
