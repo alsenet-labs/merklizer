@@ -1,4 +1,4 @@
-// @Last modified time: 2018-03-25T02:13:04+07:00
+// @Last modified time: 2018-04-02T23:50:21+07:00
 
 #merkle-files {
   .text-center {
@@ -17,6 +17,27 @@
     label h3 {
       color: #bbb;
       margin: 30000px;
+    }
+  }
+
+  .anchor-buttons {
+    width: 100%;
+    margin-top: -4em;
+    > div {
+      padding: 1.5em;
+
+      width: 100%;
+      > div {
+        display: flex;
+        flex-direction: row;
+        > div {
+          width: 40%;
+          margin-left: 5%;
+          margin-right: 5%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
     }
   }
 

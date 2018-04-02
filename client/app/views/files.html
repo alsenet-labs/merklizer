@@ -11,6 +11,19 @@
     </div>
  </div>
 
+  <div class="anchor-buttons" ng-if="queue.length && !showFileList && !$root._showOverlay && $state.current.name=='anchor'">
+    <div>
+      <div>
+        <div type="button" class="btn btn-s btn-danger" ng-click="removeAll()">
+          <span class="fa fa-recycle"></span> Clear List
+        </div>
+        <div type="button" class="btn btn-s btn-primary" ng-click="process()">
+          <span class="fa fa-link"></span> Process {{queue.length}} file{{ queue.length > 1 ? 's' : '' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="row" ng-class="{blur: $root._showOverlay}" ng-if="queue.length && showFileList">
 
     <div class="col-md-3">
