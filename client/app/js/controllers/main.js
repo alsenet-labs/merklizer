@@ -81,7 +81,9 @@ module.exports=[
         });
 
         $scope.$on('filesReady',function(event,files){
-          $scope.filesReady(files);
+          if ($scope.$state.current.name=='validate') {
+            $scope.filesReady(files);
+          }
         });
 
         $scope.$on('filesValidated',function(event,files){
