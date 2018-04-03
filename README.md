@@ -48,8 +48,7 @@ Provisions are made to allow anchoring data on other blockchains.
 ```
  git clone https://github.com/alsenet-labs/merlizer
  cd merklizer
- yarn
- gulp
+ make
 ```
 
 ## Troubleshooting
