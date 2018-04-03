@@ -45,9 +45,9 @@ gulp.task('watch', function(){
    return gulp.watch("./webapp/dist/**", ['copy']);
 });
 
-gulp.task('build', function(){
+gulp.task('cordova-build', function(){
   return streamFromPromise(cordova.build({
-    platforms: ['android'],
+    platforms: ['android','browser'],
     options: {
         argv: ['--release', '--gradleArg=--no-daemon']
     }
@@ -62,16 +62,16 @@ gulp.task('run', function(){
   }).catch(log));
 });
 
-gulp.task('dist', function() {
+gulp.task('build', function() {
   return runSequence(
     'copy',
-    'build'
+    'cordova-build'
   )
 });
 
 gulp.task('default', function() {
   return runSequence(
-    'dist',
+    'build',
     'run'
   )
 });
