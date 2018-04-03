@@ -129,16 +129,12 @@ module.exports=function(options){
                 console.log('-> bundling '+filename+'...');
                 rebundle(filename,bundler);
             });
-            options.callback();
-            return;
         }
 
         return rebundle(filename,bundler);
 
       });
-      if (!options.watch) {
-        es.merge(tasks).on('end',options.callback);
-      }
+      es.merge(tasks).on('end',options.callback);
     });
   }
 
