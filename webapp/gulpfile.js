@@ -44,11 +44,11 @@ gulp.task('copy', function () {
    var streams=[];
    streams.push(gulp.src('./node_modules/bootstrap/dist/css/*')
    .pipe(gulp.dest('./client/app/css/')));
-   streams.push(gulp.src('./node_modules/pretty-file-icons/svg/*')
-   .pipe(gulp.dest('./client/app/images')));
-   streams.push(gulp.src('./node_modules/pdfjs-dist/build/pdf.worker.min.js')
-   .pipe(rename('index.worker.min.js'))
-   .pipe(gulp.dest('./client/app/js/')));
+//   streams.push(gulp.src('./node_modules/pretty-file-icons/svg/*')
+//   .pipe(gulp.dest('./client/app/images')));
+//   streams.push(gulp.src('./node_modules/pdfjs-dist/build/pdf.worker.min.js')
+//   .pipe(rename('index.worker.min.js'))
+//   .pipe(gulp.dest('./client/app/js/')));
    return merge.apply(null,streams);
 });
 
@@ -135,11 +135,11 @@ gulp.task('dist', function(){
    .pipe(gulp.dest('./dist/css/')));
    streams.push(gulp.src('./node_modules/pretty-file-icons/svg/*')
    .pipe(gulp.dest('./dist/images/')));
-   streams.push(gulp.src('./node_modules/zxing-typescript/docs/examples/zxing.qrcodereader.min.js')
-   .pipe(gulp.dest('./dist/js/')));
-   streams.push(gulp.src('./node_modules/pdfjs-dist/build/pdf.worker.min.js')
-   .pipe(rename('index.worker.min.js'))
-   .pipe(gulp.dest('./dist/js/')));
+//  streams.push(gulp.src('./node_modules/zxing-typescript/docs/examples/zxing.qrcodereader.min.js')
+//   .pipe(gulp.dest('./dist/js/')));
+//   streams.push(gulp.src('./node_modules/pdfjs-dist/build/pdf.worker.min.js')
+//   .pipe(rename('index.worker.min.js'))
+//   .pipe(gulp.dest('./dist/js/')));
    return merge.apply(null,streams);
 
 

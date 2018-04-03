@@ -38,8 +38,6 @@ module.exports=[
   '$timeout',
   '$q',
   'merkle',
-  'tierion',
-  'ethService',
   'fileService',
   function (
     $scope,
@@ -48,8 +46,6 @@ module.exports=[
     $timeout,
     $q,
     merkle,
-    tierion,
-    ethService,
     fileService
   ) {
     this.awesomeThings = [

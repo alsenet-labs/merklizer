@@ -35,8 +35,6 @@ require('angular-ui-bootstrap');
 require('angular-files-drop');
 require('angular-smart-table');
 require('angular-file-saver');
-//require('webcam/dist/webcam.min.js');
-//require('bc-qr-reader');
 
 var app=angular.module('merkleApp',[
   'ui.router',
@@ -51,10 +49,10 @@ var app=angular.module('merkleApp',[
 .service('processing',require('./services/processing.js'))
 .service('fileService',require('./services/file.js'))
 .service('merkle',require('./services/merkle.js'))
-.service('tierion',require('./services/tierion.js'))
+//.service('tierion',require('./services/tierion.js'))
 .service('ethService',require('./services/eth.js'))
 .service('btcService',require('./services/btc.js'))
-.service('pdfService',require('./services/pdf.js'))
+//.service('pdfService',require('./services/pdf.js'))
 .directive('onChange',require('./directives/on-change.js'))
 .directive('anchor',require('./directives/anchor.js'))
 .controller('QRCodeCtrl',require('./controllers/qrcode.js'))
@@ -62,5 +60,5 @@ var app=angular.module('merkleApp',[
 .controller('FilesCtrl',require('./controllers/files.js'))
 .controller('OverlayCtrl',require('./controllers/overlay.js'))
 .controller('ReportCtrl',require('./controllers/report.js'))
-.filter('prettyFileIcon',require('./filters/pretty-file-icon.js'))
+//.filter('prettyFileIcon',require('./filters/pretty-file-icon.js'))
 .filter('stringify',require('./filters/stringify.js'))

@@ -36,7 +36,7 @@ module.exports=[
   '$timeout',
   '$window',
   'processing',
-  'pdfService',
+//  'pdfService',
   'fileService',
   '$q',
   function (
@@ -45,7 +45,7 @@ module.exports=[
     $timeout,
     $window,
     processing,
-    pdfService,
+//    pdfService,
     fileService,
     $q
   ) {
@@ -69,10 +69,11 @@ module.exports=[
         $scope.$on('validateFile',function(event,file){
             $scope.validate(file);
         });
+/*
         $scope.$on('showMetadata',function(event,file){
             $scope.showMetadata(file);
         });
-
+*/
         $scope.$on('excludedFile',function(event,file){
           var ext=file.name.split('.').pop();
           if (file.type=='application/json' || (ext=='json')) {
@@ -105,13 +106,14 @@ module.exports=[
 
       }, // init
 
+/*
       showMetadata: function(file){
         fileService.read(file,'readAsArrayBuffer')
         .then(pdfService.getMetadata)
         .then(console.log);
 
       },
-
+*/
       // click on validate button
       validate: function(file){
         var q=$q.defer();

@@ -33,9 +33,9 @@ module.exports = [
   'merkle',
   'ethService',
   'btcService',
-  'tierion',
+//  'tierion',
   'FileSaver',
-  'pdfService',
+//  'pdfService',
 
   function(
     $q,
@@ -45,9 +45,9 @@ module.exports = [
     merkle,
     ethService,
     btcService,
-    tierion,
+//    tierion,
     FileSaver,
-    pdfService
+//    pdfService
 
   ) {
     var service=this;
@@ -84,6 +84,7 @@ module.exports = [
         var q;
 
         // Tierion
+        /*
         if (tierion.enabled) {
           service.showOverlay({
             message: 'Submitting hash to Tierion...',
@@ -109,6 +110,7 @@ module.exports = [
             return q.promise;
           });
         }
+        */
 
         // Ethereum
         if (ethService.enabled) {
