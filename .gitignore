@@ -1,3 +1,8 @@
 node_modules
 build
 dist/
+platforms
+plugins
+cordova/www/views
+cordova/www/js
+cordova/www/css
