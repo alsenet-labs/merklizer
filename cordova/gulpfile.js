@@ -29,11 +29,11 @@ var streamFromPromise=require('stream-from-promise');
 
 gulp.task('copy', function () {
    var streams=[];
-   streams.push(gulp.src('../merklizer/dist/js/index.min.*')
+   streams.push(gulp.src('../webapp/dist/js/index.min.*')
    .pipe(gulp.dest('./www/js/')));
-   streams.push(gulp.src('../merklizer/dist/css/bundle.css')
+   streams.push(gulp.src('../webapp/dist/css/bundle.css')
    .pipe(gulp.dest('./www/css/')));
-   streams.push(gulp.src('../merklizer/dist/views/*')
+   streams.push(gulp.src('../webapp/dist/views/*')
    .pipe(gulp.dest('./www/views/')));
    return merge.apply(null,streams)
   .on('end', function(){log('Done!')})
@@ -42,7 +42,7 @@ gulp.task('copy', function () {
 
 
 gulp.task('watch', function(){
-   return gulp.watch("./merklizer/dist/**", ['copy']);
+   return gulp.watch("./webapp/dist/**", ['copy']);
 });
 
 gulp.task('build', function(){
