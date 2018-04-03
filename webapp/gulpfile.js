@@ -86,7 +86,7 @@ function callback(err,msg){
   if(err) throw err;
 }
 
-gulp.task('default', function() {
+gulp.task('run', function() {
   return runSequence(
     'copy',
     'sass',
@@ -96,6 +96,8 @@ gulp.task('default', function() {
 
   );
 });
+
+gulp.task('default',['run']);
 
 gulp.task('build', function(callback){
   runSequence(
