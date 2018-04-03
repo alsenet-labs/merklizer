@@ -1,0 +1,18 @@
+// @Last modified time: 2018-03-26T22:16:12+07:00
+
+//@import "node_modules/bootstrap/scss/bootstrap";
+//@import "./bootstrap.min.scss";
+@import './overlay.scss';
+@import './files.scss';
+@import './chooser.scss';
+@import './qrcode.scss';
+@import './anchor.scss';
+@import './report.scss';
+
+html, body {
+  height: 100%;
+}
+
+body {
+  padding: 0.5em;
+}
