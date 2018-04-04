@@ -31,11 +31,15 @@ __Under active development, don't use it for production yet.__
 # README
 
 The actual demo is hashing files using SHA512-256, building a Merkle
-tree from those hashes and anchoring the Merkle root directly to
-the Ethereum blockchain (using the [MetaMask browser extension](https://metamask.io/))
+tree from those hashes and anchoring the Merkle root on the Bitcoin and
+Ethereum blockchains.
+
+On the Ethereum blockchain (using the [MetaMask browser extension](https://metamask.io/))
 or a local node.
 
-After the blockchain transaction appears on the blockchain, it allows
+On the Bitcoin blockchain using a public service (eg: https://blockexplorer.com).
+
+After the blockchain transaction appears on the blockchain(s), it allows
 you to download a zip archive containing all the Merkle proofs and the
 anchoring details, one json per input file.
 
@@ -43,17 +47,24 @@ Files are NOT transmitted to the server, everything occurs client-side.
 
 Provisions are made to allow anchoring data on other blockchains.
 
+In the future you will be able to enter your public key and to obtain raw
+transactions. Then you will be able to sign and send the transactions using
+your preferred wallet(s), and to enter the resulting transaction id(s) in order
+to complete the process and prepare the proofs.
+
 ## Quickstart
 
 ```
  git clone https://github.com/alsenet-labs/merlizer
  cd merklizer
  make
+ make run-cordova
 ```
 
 ## Troubleshooting
 
-When running gulp and the maximum number of inotify watchers is set too low, the error below occurs during continuous integration initialization:
+When running gulp and the maximum number of inotify watchers is set too low,
+the error below occurs during continuous integration initialization:
 ```
 Error: watch /src/merklizer/node_modules/assert-plus/assert.js ENOSPC
 ```
