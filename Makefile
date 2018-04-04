@@ -1,4 +1,6 @@
-.PHONY: webapp cordova run run-webapp run-cordova
+# @Last modified time: 2018-04-04T12:02:57+07:00
+
+.PHONY: webapp cordova run run-webapp run-cordova run-cordova-android
 
 all: webapp cordova
 
@@ -11,9 +13,10 @@ cordova:
 run: run-cordova
 
 run-cordova: cordova
-	cd cordova && gulp run
+	cd cordova && cordova run browser
+
+run-cordova-android: cordova
+	cd cordova && cordova run android
 
 run-webapp: webapp
 	cd webapp && gulp run
-
-
