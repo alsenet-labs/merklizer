@@ -532,7 +532,7 @@ module.exports = [
           });
 
           // check file hash
-          if (merkle.hashToString(file.hash)!=file.proof.hash) {
+          if (file.hash && merkle.hashToString(file.hash)!=file.proof.hash) {
             throw new Error('File hash mismatch !');
           }
 
@@ -573,7 +573,7 @@ module.exports = [
           // check merkle proof
           var validated=merkle.checkProof(file.proof);
           anchor.validated=validated;
-          console.log(file.name+' validated on '+anchor.type+'('+anchor.networkId+'): ',validated.toString());
+          console.log((file.name||merkle.hashToString(file.proof.hash))+' validated on '+anchor.type+'('+anchor.networkId+'): ',validated.toString());
           return validated;
         } // validateAnchor
 

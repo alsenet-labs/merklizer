@@ -2,18 +2,21 @@
   <div class="report">
     <div class="file" ng-repeat="file in $stateParams.files">
       <div class="details" ng-if="file.proof && !file.proof.validated">
-        <p class="status">The file "{{::file.name}}" could not be validated.</p>
+        <p ng-if="file.hash" class="status">The file "{{::file.name}}" could not be validated.</p>
+        <p ng-if="!file.hash" class="status">The QR proof could not be validated.</p>
       </div>
       <div class="details" ng-if="file.proof && file.proof.validated">
-        <p class="status">The file "{{::file.name}}" looks genuine.</p>
+        <p ng-if="file.hash" class="status">The file "{{::file.name}}" looks genuine.</p>
+        <p ng-if="!file.hash" class="status">The QR proof was validated successfuly.</p>
         <hr />
         <div>The following facts have been established conclusively:</div>
         <ul>
-          <li>
+          <li ng-if="file.hash">
             <span>The file hash match the {{::file.proof.hashType}} hash stored in the proof ({{::file.proof.hash}})</span>
           </li>
           <li ng-if="file.proof.operations.length">
-            <span>The Merkle root ({{::file.proof.root}}) has been recomputed sucessfuly from the file hash after the following operation<span ng-if="file.proof.operations.length>1">s</span>:</span>
+            <span ng-if="file.hash">The Merkle root ({{::file.proof.root}}) has been recomputed sucessfuly from the file hash after the following operation<span ng-if="file.proof.operations.length>1">s</span>:</span>
+            <span ng-if="!file.hash">The Merkle root ({{::file.proof.root}}) has been recomputed sucessfuly from the {{::file.proof.hashType}} hash stored in the proof ({{::file.proof.hash}}) after the following operation<span ng-if="file.proof.operations.length>1">s</span>:</span>
             <ul class="operations">
               <li ng-repeat="operation in file.proof.operations">
                 <span ng-repeat="(key, value) in operation">{{key}}: {{value}}</span>
