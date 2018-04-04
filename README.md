@@ -53,6 +53,10 @@ your preferred wallet(s), and to enter the resulting transaction id(s) in order
 to complete the process and prepare the proofs.
 
 ## Quickstart
+Before all you must have the latest Android SDK (ideally installed via
+Android Studio) and a fairly recent LTS nodeJS release (ideally installed
+in user space via nvm)
+
 Download and build with:
 ```
 git clone https://github.com/alsenet-labs/merlizer
@@ -71,7 +75,7 @@ Run in the browser with cordova:
 ```
 make run-cordova
 ```
-Run on android with cordova:
+Run on Android with cordova:
 ```
 make run-cordova-android
 ```

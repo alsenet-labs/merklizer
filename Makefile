@@ -4,8 +4,13 @@
 
 all: webapp cordova
 
+ugly: webapp-ugly cordova
+
 webapp:
 	cd webapp && yarn && gulp build
+
+webapp-ugly:
+	cd webapp && yarn && gulp build-ugly
 
 cordova:
 	cd cordova && yarn && ( test -d platforms/android || cordova platform add android ) && ( test -d platforms/browser  || cordova platform add browser ) && gulp build
