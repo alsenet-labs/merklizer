@@ -53,20 +53,55 @@ your preferred wallet(s), and to enter the resulting transaction id(s) in order
 to complete the process and prepare the proofs.
 
 ## Quickstart
+Download and build with:
+```
+git clone https://github.com/alsenet-labs/merlizer
+cd merklizer
+make
+```
+Rebuild with:
+```
+make # use "build ugly" instead to minimize javascript (slow)
+```
+Run in the browser without cordova:
+```
+make run-webapp
+```
+Run in the browser with cordova:
+```
+make run-cordova
+```
+Run on android with cordova:
+```
+make run-cordova-android
+```
 
-```
- git clone https://github.com/alsenet-labs/merlizer
- cd merklizer
- make
- make run-cordova
-```
+Note: gh-pages branch is made of content of cordova/platforms/browser/www
+
 
 ## Troubleshooting
 
-When running gulp and the maximum number of inotify watchers is set too low,
-the error below occurs during continuous integration initialization:
+### EACCESS error when building project
+Message:
 ```
-Error: watch /src/merklizer/node_modules/assert-plus/assert.js ENOSPC
+(...)/platforms/android/cordova/node_modules/q/q.js:570:49 code: 'EACCES', errno: 'EACCES', syscall: 'spawn' }
+```
+Fix with:
+```
+sudo chmod 755 $(which gradle)
+```
+
+### INSTALL_FAILED_UPDATE_INCOMPATIBLE when running project
+Uninstall the conflicting version - directly from the phone, or with adb:
+```
+adb uninstall com.alsenet.merklizer
+```
+
+When running gulp in the webapp folder and the maximum number of inotify
+watchers is set too low, the error below may occurs during continuous
+integration:
+```
+Error: watch (...)/merklizer/webapp/node_modules/assert-plus/assert.js ENOSPC
 ```
 In which case the limit must be raised with something like:
 ```
