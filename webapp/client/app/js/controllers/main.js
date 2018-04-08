@@ -82,7 +82,7 @@ module.exports=[
         });
 
         $scope.$on('filesReady',function(event,files){
-          if ($scope.$state.current.name=='validate') {
+          if ($scope.$state.current.name=='validateFile') {
             $scope.filesReady(files);
           }
         });
