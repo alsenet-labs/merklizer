@@ -26,6 +26,14 @@ var merge = require('merge-stream');
 var cordova=require('cordova-lib').cordova;
 var log=require('fancy-log');
 var streamFromPromise=require('stream-from-promise');
+var rev=require('gulp-rev-append');
+
+gulp.task('rev', function() {
+  gulp.src("./www/index.html")
+    .pipe(rev())
+    .pipe(gulp.dest('./www'))
+    .on('error', log);
+});
 
 gulp.task('copy', function () {
    var streams=[];
@@ -53,7 +61,7 @@ gulp.task('cordova-build', function(){
     }
   }).catch(log))
 });
-      
+
 gulp.task('run', function(){
   return streamFromPromise(cordova.run({
     options: {
@@ -65,6 +73,7 @@ gulp.task('run', function(){
 gulp.task('build', function() {
   return runSequence(
     'copy',
+    'rev',
     'cordova-build'
   )
 });
@@ -75,4 +84,3 @@ gulp.task('default', function() {
     'run'
   )
 });
-
