@@ -52,29 +52,41 @@ module.exports=[
       url: '/anchor',
       templateUrl: 'views/files.html',
       controller: 'FilesCtrl',
-      controllerAs: 'files'
+      controllerAs: 'files',
+      title: 'Anchor'
+    })
+    .state('processed', {
+      url: '/processed',
+      templateUrl: 'views/processed.html',
+      controller: 'ProcessedCtrl',
+      controllerAs: 'processed',
+      title: 'Processed'
     })
     .state('validate', {
       url: '/validate',
-      templateUrl: 'views/chooser.html'
+      templateUrl: 'views/chooser.html',
+      title: 'Validate'
     })
     .state('validateFile', {
       url: '/validate-file',
       templateUrl: 'views/files.html',
       controller: 'FilesCtrl',
-      controllerAs: 'files'
+      controllerAs: 'files',
+      title: 'Validate File'
     })
     .state('validateQRCode', {
       url: '/validate-qrcode',
       templateUrl: 'views/qrcode.html',
       controller: 'QRCodeCtrl',
-      controllerAs: 'qrcode'
+      controllerAs: 'qrcode',
+      title: 'Validate QRCode'
     })
     .state('report', {
       url: '/report',
       templateUrl: 'views/report.html',
       controller: 'ReportCtrl',
       controllerAs: 'report',
+      tile: 'Report',
       params: {
         files: null
       }
