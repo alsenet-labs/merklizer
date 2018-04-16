@@ -27,32 +27,41 @@ var sha512_256=js_sha512.sha512_256;
 var Q=require('q');
 
 module.exports = [
+  '$q',
+  '$window',
   function(
+    $q,
+    $window
   ) {
     var merkle=this;
 
     angular.extend(merkle,{
       mask: 0xfffe,
-      debug: true,
+      debug: false,
       version: '1.0.0',
 
-      hashType: 'SHA512_256',
+      hashType: 'SHA512_TRUNC',
 
       _hash: {
+        SHA256: function hash(data){
+          return $window.crypto.subtle.digest('SHA-256',data).then(function(a){
+            return new Uint8Array(a);
+          });
+        },
         SHA512_256: function hash(data){
-          return new Uint8Array(sha512_256.arrayBuffer(data));
-        }
-        /*
-        // TODO: using crypto promises should be faster but requires too much refactoring for now
-        SHA512_trunc: function hash(data){
-          $window.crypto.subtle.digest('SHA-512',data).then(function(a){
+          return $q.resolve(new Uint8Array(sha512_256.arrayBuffer(data)));
+        },
+        SHA512_TRUNC: function hash(data){
+          return $window.crypto.subtle.digest('SHA-512',data).then(function(a){
             return new Uint8Array(a.slice(0,32));
           });
         }
-        */
       },
 
       hash: function hash(data,hashType){
+        if (!merkle._hash[hashType||merkle.hashType]) {
+          throw new Error('Hash type '+(hashType||merkle.hashType)+' not supported');
+        }
         return merkle._hash[hashType||merkle.hashType](data);
       },
 
@@ -87,12 +96,15 @@ module.exports = [
       },
 
       compute: function compute(objectList){
-        var tree=merkle.computeTree(objectList);
-        merkle.computeProofs(tree);
-        return tree;
+        return merkle.computeTree(objectList)
+        .then(function(tree){
+          merkle.computeProofs(tree);
+          return tree;
+        });
       },
 
       computeTree: function computeTree(objectList){
+        var d=$q.defer();
         var leaves=[];
         var tree=[leaves];
 
@@ -100,30 +112,59 @@ module.exports = [
           leaves.push(obj);
         });
 
-        if (leaves.length>(merkle.mask|1)) throw(new Error('too much leaves'));
+        if (leaves.length>(merkle.mask|1)) {
+          d.reject(new Error('too much leaves'));
+          return d.promise;
+        }
 
-        while(tree[0].length>1) {
+        (function outerLoop(tree){
+          if (tree[0].length<=1) {
+            d.resolve(tree);
+            return;
+          }
           tree.unshift([]);
-          tree[1].some(function(elem,index){
+
+          var q=$q.defer();
+          (function loop(index) {
+            if (index>=tree[1].length) {
+              q.resolve(tree);
+              return;
+            }
+
             // even indexes only
-            if (!(index&1)) {
+            if (index&1) {
+              loop(index+1);
+
+            } else {
+              var elem=tree[1][index];
               // not the last element ?
               if ((index|1)<tree[1].length) {
                 // merge hashes
-                tree[0].push({
-                  hash: merkle.hashMerge(elem.hash,tree[1][index|1].hash)
-                });
+                merkle.hashMerge(elem.hash,tree[1][index|1].hash)
+                .then(function(hash){
+                  tree[0].push({
+                    hash: hash
+                  });
+                  loop(index+1);
+                })
+                .catch(q.reject);
 
               } else {
                 // nothing to merge, store vanilla hash
                 tree[0].push({
                   hash: elem.hash
                 });
+                loop(index+1);
               }
             }
-          });
-        }
-        return tree;
+          })(0);
+
+          q.promise.then(outerLoop)
+          .catch(d.reject);
+
+        })(tree);
+
+        return d.promise;
 
       }, // computeTree
 
@@ -168,7 +209,10 @@ module.exports = [
 
         if (merkle.debug) {
           leaves.some(function(elem){
-            console.log(elem,merkle.checkProof(elem.proof).toString());
+            merkle.checkProof(elem.proof)
+            .then(function(validated){
+              console.log(elem.proof, validated.toString());
+            });
           });
         }
       }, // computeProofs
@@ -180,29 +224,49 @@ module.exports = [
           || !Array.isArray(proof.operations)
           || !proof.root
           || !proof.hash
-        ) return false;
+        ) return $q.resolve(false);
 
         if (merkle.debug) {
           console.log(proof)
-          console.log(merkle.hashToString(proof.hash));
         }
 
-        var hash=proof.hash;
-        proof.operations.some(function(step){
+        var q=$q.defer();
+        (function loop(hash,i){
+          if (merkle.debug) console.log(merkle.hashToString(hash))
+          if (i>=proof.operations.length) {
+            q.resolve(hash);
+            return;
+          }
+          var step=proof.operations[i];
+
           if (step.left) {
-            hash=merkle.hashMerge(step.left,hash,proof.hashType);
+            merkle.hashMerge(step.left,hash,proof.hashType)
+            .then(function(hash){
+              loop(hash,i+1);
+            })
+            .catch(q.reject);
 
           } else {
             if (step.right) {
-              hash=merkle.hashMerge(hash,step.right,proof.hashType);
+              merkle.hashMerge(hash,step.right,proof.hashType)
+              .then(function(hash){
+                loop(hash,i+1)
+              });
 
             } else {
-              throw(new Error('invalid proof'));
+              q.reject(new Error('invalid proof'));
             }
           }
-          if (merkle.debug) console.log(merkle.hashToString(hash))
+
+        })(proof.hash,0);
+
+        return q.promise.then(function(hash){
+          return merkle.hashToString(hash)==merkle.hashToString(proof.root);
+        })
+        .catch(function(err){
+          console.log(err);
         });
-        return merkle.hashToString(hash)==merkle.hashToString(proof.root);
+
 
       }, // checkProof
 
