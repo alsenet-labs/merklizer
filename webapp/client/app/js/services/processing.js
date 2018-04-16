@@ -24,6 +24,7 @@
 
 var JSZip=require('jszip');
 const Buffer = require('safe-buffer').Buffer;
+const QRCode = require('qrcode-svg')
 
 module.exports = [
   '$q',
@@ -33,7 +34,7 @@ module.exports = [
   'merkle',
   'ethService',
   'btcService',
-//  'tierion',
+  'fileService',
   'FileSaver',
 //  'pdfService',
 
@@ -45,7 +46,7 @@ module.exports = [
     merkle,
     ethService,
     btcService,
-//    tierion,
+    fileService,
     FileSaver,
 //    pdfService
 
@@ -74,56 +75,26 @@ module.exports = [
           message: 'Processing files...',
           showProgress: true
         });
-        service.tree=merkle.compute(queue);
 
         function pushAnchor(anchor){
           queue.anchors=queue.anchors||[];
           queue.anchors.push(anchor);
         }
 
-        var q;
-
-        // Tierion
-        /*
-        if (tierion.enabled) {
-          service.showOverlay({
-            message: 'Submitting hash to Tierion...',
-            showProgress: false
-          });
-          if (!q) {
-            q=$q.resolve();
-          }
-          q=q.then(function(){
-            var q=$q.defer();
-            tierion.hashClient.submitHashItem(service.prefix+merkle.getRoot(service.tree),function(err,receipt){
-              if (err) {
-                q.reject(err);
-              } else {
-                console.log(receipt);
-                pushAnchor({
-                  type: 'tierion',
-                  receipt: receipt
-                });
-                q.resolve()
-              }
-            });
-            return q.promise;
-          });
-        }
-        */
+        var q=merkle.compute(queue)
+        .then(function(tree){
+          service.tree=tree;
+        });
 
         // Ethereum
         if (ethService.enabled) {
-          service.showOverlay({
-            message: 'Please submit or reject transaction using Metamask.',
-            showProgress: false,
-            showButton: false
-          });
 
-          if (!q) {
-            q=$q.resolve();
-          }
           q=q.then(function() {
+            service.showOverlay({
+              message: 'Please submit or reject transaction using Metamask.',
+              showProgress: false,
+              showButton: true
+            });
             // check default account again
             return ethService.init()
             .then(function(){
@@ -172,7 +143,6 @@ module.exports = [
                 })
                 .then(function waitNextBlocks(receipt, looping){
                   if (!receipt) {
-                    console.log('huh?');
                     return;
                   }
 
@@ -274,16 +244,12 @@ module.exports = [
         }
 
         if (btcService.enabled) {
-          service.showOverlay({
-            message: 'Submitting Bitcoin transaction...',
-            showProgress: false,
-            showButton: false
-          });
-
-          if (!q) {
-            q=$q.resolve();
-          }
           q=q.then(function() {
+            service.showOverlay({
+              message: 'Submitting Bitcoin transaction...',
+              showProgress: false,
+              showButton: false
+            });
             return btcService.sendTransaction({
               from: btcService.keyPair.getAddress(),
               to: btcService.keyPair.getAddress(),
@@ -294,7 +260,7 @@ module.exports = [
             .then(function getBitcoinTransaction_loop(receipt){
               service.showOverlay({
                 message: 'Waiting for Bitcoin transaction confirmation...',
-                showProgress: false,
+                showProgress: true,
                 showButton: false
               });
               return btcService.getTransaction(receipt.txid)
@@ -323,22 +289,23 @@ module.exports = [
         }
 
         q.then(function(){
-          service.downloadArchive(queue);
+          return service.downloadArchive(queue);
         })
         .then(function(){
-          queue.forEach(function(file){
-            file.proof.validated=true;
-          });
+          $timeout(function(){
+            $rootScope.$broadcast('filesProcessed');
+          },150);
         })
         .catch(function(err){
           service.hideOverlay();
           console.log('Error !',err);
           $window.alert(err.message||(err.value&&err.value.message&&err.value.message.split('\n')[0])||'Unexpected error !');
         })
+/*
         .finally(function(){
           service.hideOverlay();
         });
-
+*/
       }, // processFiles
 
       getReadableProof: function(proof) {
@@ -346,6 +313,7 @@ module.exports = [
           hashType: proof.hashType,
           root: merkle.hashToString(proof.root),
           hash: merkle.hashToString(proof.hash),
+          info: proof.info,
           operations: (function(){
             var result=[];
             proof.operations.forEach(function(op){
@@ -367,27 +335,72 @@ module.exports = [
       }, // getReadableProof
 
       downloadArchive: function downloadArchive(queue){
+        var q=$q.defer();
+
         service.showOverlay({
           message: 'Build archive...',
           showProgress: true
         });
 
-        var zip=new JSZip();
-        var merkleRoot=merkle.getRoot(service.tree);
-        var folder=zip.folder(/*merkleRoot*/);
+        try {
+          var zip=new JSZip();
+          var merkleRoot=merkle.getRoot(service.tree);
+          var folder=zip.folder(/*merkleRoot*/);
 
-        queue.forEach(function(file,i){
-          file.proof.anchors=queue.anchors;
-          folder.file(file.name+'.json',JSON.stringify(service.getReadableProof(file.proof),false,2));
-        });
+          (function loop(i){
+            if (i>=queue.length) {
+              q.resolve();
+              return
+            }
+            var file=queue[i];
+            file.proof.anchors=queue.anchors;
+            var nextFile=queue[i+1];
 
-        zip.generateAsync({type:"blob"}).then(function(content) {
-          service.showOverlay({
-            hideDialog: true
-          });
-          FileSaver.saveAs(content, "proofs-"+merkleRoot+".zip");
-          service.hideOverlay();
-        });
+            if (nextFile && nextFile.name==file.name+'.txt') {
+              nextFile.isInfo=true;
+              $q.resolve().then(function(){
+                return fileService.read(nextFile,'readAsText');
+              })
+              .then(function(result){
+                file.proof.info=result;
+                var json=JSON.stringify(service.getReadableProof(file.proof),false,2);
+                folder.file(file.name+'.json',json);
+                folder.file(file.name+'.svg',new QRCode(json).svg());
+                loop(i+1);
+              })
+              .catch(q.reject);
+
+            } else {
+              var json=JSON.stringify(service.getReadableProof(file.proof),false,2);
+              folder.file(file.name+'.json',json);
+              folder.file(file.name+'.svg',new QRCode(json).svg());
+              loop(i+1);
+              return;
+            }
+
+          })(0);
+
+          return q.promise.then(function(){
+            var q=$q.defer();
+            zip.generateAsync({type:"blob"}).then(function(content) {
+              service.showOverlay({
+                hideDialog: true
+              });
+              FileSaver.saveAs(content, "proofs-"+merkleRoot+".zip");
+              service.hideOverlay();
+              q.resolve();
+            });
+            return q.promise;
+          })
+          .catch(function(err) {
+            console.log(err);
+          })
+
+        } catch(e) {
+          console.log(e);
+          q.reject(e);
+          return q.promise;
+        }
 
       }, // downloadArchive
 
@@ -400,13 +413,9 @@ module.exports = [
             transaction.block=service.cached_blocks[transaction.blockHash];
             return transaction;
           }
-          var q;
-//          if (transaction.blockNumber) {
-//            q=ethService.eth.getBlockByNumber(transaction.blockNumber,false);
-//          } else {
-            q=ethService.eth.getBlockByHash(transaction.blockHash,false);
-//          }
-          return q.then(function(block){
+
+          return ethService.eth.getBlockByHash(transaction.blockHash,false)
+          .then(function(block){
             if (options&&options.cache) {
               service.cached_blocks[block.hash]=block;
             }
@@ -463,7 +472,6 @@ module.exports = [
           }
         });
 
-        // TODO: many anchors
         function validateEthereumAnchor(anchor) {
           var q=$q.resolve();
 
@@ -571,10 +579,12 @@ module.exports = [
           }
 
           // check merkle proof
-          var validated=merkle.checkProof(file.proof);
-          anchor.validated=validated;
-          console.log((file.name||merkle.hashToString(file.proof.hash))+' validated on '+anchor.type+'('+anchor.networkId+'): ',validated.toString());
-          return validated;
+          return merkle.checkProof(file.proof).then(function(validated){
+            anchor.validated=validated;
+            console.log((file.name||merkle.hashToString(file.proof.hash))+' validated on '+anchor.type+'('+anchor.networkId+'): ',validated.toString());
+            return validated;
+          });
+
         } // validateAnchor
 
         function validateBitcoinAnchor(anchor){
@@ -708,26 +718,6 @@ module.exports = [
 
         return q.promise.then(function(){
           $rootScope.$broadcast('filesValidated',files);
-/*
-          var failures=0;
-          files.forEach(function(file){
-            if (file.proof) {
-              if (!file.proof.validated) {
-                ++failures;
-              }
-            }
-          });
-
-          if (!failures) {
-            if (count) {
-//              $window.alert('Validation was successful.');
-              $rootScope.$state.go('report',{files: files});
-            }
-          } else {
-            $window.alert(failures+' file'+(failures>1?'s':'')+' could not be validated.');
-            $rootScope.$state.go('report',{files: files});
-          }
-*/
         });
 
       } // validateAll
