@@ -56,6 +56,7 @@ module.exports=[
 
     angular.extend($scope,{
       $rootScope: $rootScope,
+      mouseOverLabel: false,
       merkle: merkle,
       mimeTypes: '',
       isHTML5: true,
@@ -67,8 +68,18 @@ module.exports=[
         value: 0
       },
       init: function() {
+        $scope.$on('filesProcessed',function(event,queue){
+          $scope.$state.go('processed');
+        });
 
       }, // init
+
+      mouseEnter: function(){
+        $scope.mouseOverLabel=true;
+      },
+      mouseLeave: function(){
+        $scope.mouseOverLabel=false;
+      },
 
       process: function(){
         $rootScope.$broadcast('processFiles',$scope.queue);
@@ -93,7 +104,7 @@ module.exports=[
                 fileList[j].name!=fileList[i].name
                 || fileList[j].size!=fileList[i].size
               ) {
-                fileList[j].duplicate=true;
+                fileList[j].duplicate=fileList[j];
                 ++hasDuplicate;
                 console.log('hash collision', fileList[j]);
               } else {
@@ -122,7 +133,7 @@ module.exports=[
 
       excludeFile: function(file){
         var ext=file.name.split('.').pop().toLowerCase();
-        return ext=='json';
+        return ext=='json' && $scope.$state.current.name=='validateFile'; // todo exclude only if it's a proof
       },
 
       onFilesDropped: function($files, $event) {
@@ -142,10 +153,23 @@ module.exports=[
             $rootScope.$broadcast('excludedFile',file);
           }
         });
+        $scope.queue.sort(function(a,b){
+          a=a.name.toLowerCase();
+          b=b.name.toLowerCase();
+          if (a>b) return 1;
+          if (a<b) return -1;
+          return 0;
+        });
         $scope.computeHashes($scope.queue)
         .then($scope.removeDuplicates)
         .then(function(){
           $rootScope.$broadcast('filesReady',$scope.queue);
+          $('table.files').floatThead({
+              position: 'fixed',
+              scrollContainer: function($table){
+                  return $table.closest('.files-wrapper');
+              }
+          });
         })
         .finally($scope.hideOverlay);
 
@@ -209,8 +233,9 @@ module.exports=[
           }
 
           fileService.read(file,'readAsArrayBuffer')
+          .then(merkle.hash)
           .then(function(result){
-            file.hash=merkle.hash(result);
+            file.hash=result;
             file.hash_str=merkle.hashToString(file.hash);
           })
           .then(loop)
@@ -223,6 +248,8 @@ module.exports=[
       } // computeHashes
 
     });
+
+    $scope.init();
 
   }
 

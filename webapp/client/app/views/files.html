@@ -1,5 +1,4 @@
-<div ng-cloak ng-controller="FilesCtrl" id="merkle-files" ng-cloak  files-read="false" files-drop="onFilesDropped($files, $event)" class="disable-selection" ng-class="{shrink: queue.length && $state.current.name=='anchor', blur: $root._showOverlay}" >
-
+<div ng-cloak id="merkle-files" ng-cloak  files-read="false" files-drop="onFilesDropped($files, $event)" class="disable-selection" ng-class="{shrink: queue.length && $state.current.name=='anchor', blur: $root._showOverlay}" >
   <div class="dashes" ng-if="!$root.mobileApp && !$root._showOverlay" ng-class="{over: mouseOverLabel}"></div>
 
   <div class="nofilesyet d-flex w-100 justify-content-center" ng-class="{'h-100': !queue.length||$state.current.name=='validateFile', 'h-25': queue.length&&$state.current.name=='anchor'}">
