@@ -23,12 +23,12 @@
 
 module.exports=(function(){
   return {
-    enabled: true,
+    enabled: false,
     network: 'testnet',
     apiUrl: 'https://testnet.blockexplorer.com/api/',
     key: {
       public: 'n4RXsd77ahQc4SMHucEch4aVr42Jd2tLdR',
-      private: 'cV1XdpbCu5jBqrLk38Xcxn4JeJ3YpMwrSzTuCuYVnGx6JHmMZCs4'
+      private: null
     },
     getTransactionURL: function(network,txid){
       return 'https://'+((network!='bitcoin')?network+'.':'')+'blockexplorer.com/tx/'+txid;
