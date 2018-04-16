@@ -1,4 +1,4 @@
-// @Last modified time: 2018-04-03T01:38:39+07:00
+// @Last modified time: 2018-04-09T03:25:54+07:00
 
 .blur {
   filter: blur(5px);
@@ -21,7 +21,7 @@
         border: 1px solid gray;
         border-radius: 5px;
         padding: 20px;
-        background-color: rgba(255,255,255,0.1);
+        background-color: #DDD;
         position: absolute;
         top: 50%;
         left: 50%;
@@ -30,6 +30,7 @@
         progress {
           height: 15px;
           border: 0px none;
+          width: 100%;
         }
 
         .btn {

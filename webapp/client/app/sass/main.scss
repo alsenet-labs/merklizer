@@ -1,4 +1,4 @@
-// @Last modified time: 2018-03-26T22:16:12+07:00
+// @Last modified time: 2018-04-10T18:52:41+07:00
 
 //@import "node_modules/bootstrap/scss/bootstrap";
 //@import "./bootstrap.min.scss";
@@ -9,10 +9,27 @@
 @import './anchor.scss';
 @import './report.scss';
 
+
 html, body {
   height: 100%;
 }
 
+html, ui-view {
+  font-size: small;
+}
+
 body {
   padding: 0.5em;
+}
+
+.disable-selection {
+  user-select: none;
+}
+
+@media screen and (min-width: 640px) {
+  html, ui-view {
+    font-size: medium;
+  }
+  ui-view {
+  }
 }

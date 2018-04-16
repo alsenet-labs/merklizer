@@ -1,4 +1,4 @@
-// @Last modified time: 2018-04-13T13:15:51+07:00
+// @Last modified time: 2018-04-13T15:36:43+07:00
 
 #merkle-files {
   overflow: hidden;
@@ -65,12 +65,18 @@
         // resize on parent resize (because of stripes)
         flex-grow: 1;
 
+        td, th {
+          padding: 0.5em;
+        }
+        th {
+          background-color: cyan;
+          border-bottom: 1px solid gray;
+        }
+
         tbody {
 
-          td:first-child:before {
-            font-family: FontAwesome;
-            content: ""; // file
-            margin-right: 0.5em;
+          td:last-child {
+            padding-right: 1em;
           }
           tr:nth-of-type(odd) {
             background-color: #e9e9f9;
@@ -83,12 +89,20 @@
           tr:last-child {
             border-bottom: none;
           }
-        }
 
-        td, th {
-          padding: 0.5em;
+          td {
+            user-select: text;
+          }
+          td:first-child:before {
+            font-family: FontAwesome;
+            content: ""; // file
+            margin-right: 0.5em;
+          }
+          td.hash {
+            font-family: DejaVu Sans Mono, monospace;
+            font-variant: all-small-caps;
+          }
         }
-
       }
     }
   }
@@ -272,7 +286,7 @@
 }
 
 #merkle-files.filesDrop.filesDrop--dragover .dashes, #merkle-files.filesDrop .dashes.over {
-   border: dashed 0.5em red;
+   border: dashed 0.5em gray;
 }
 
 #merkle-files.filesDrop.shrink {
