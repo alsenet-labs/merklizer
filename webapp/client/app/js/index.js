@@ -24,6 +24,7 @@
 
 var angular=require('angular');
 window.jQuery=window.$=require('jquery');
+require('floatthead');
 
 require('../css/bootstrap.min.css');
 require('../css/main.css');
@@ -58,6 +59,7 @@ var app=angular.module('merkleApp',[
 .controller('QRCodeCtrl',require('./controllers/qrcode.js'))
 .controller('MainCtrl',require('./controllers/main.js'))
 .controller('FilesCtrl',require('./controllers/files.js'))
+.controller('ProcessedCtrl',require('./controllers/processed.js'))
 .controller('OverlayCtrl',require('./controllers/overlay.js'))
 .controller('ReportCtrl',require('./controllers/report.js'))
 //.filter('prettyFileIcon',require('./filters/pretty-file-icon.js'))
