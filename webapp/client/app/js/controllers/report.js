@@ -29,6 +29,11 @@
  * Controller of the merkleApp
  */
 
+
+if (!TextDecoder) {
+  const TextDecoder=require('text-encoding').TextDecoder;
+}
+
 module.exports=[
   '$scope',
   '$rootScope',
@@ -56,6 +61,10 @@ module.exports=[
         angular.forEach($scope.$stateParams.files,function(file){
           if (file.proof) {
             file.proof.root=merkle.hashToString(file.proof.root);
+            if (file.proof.info) {
+              var dec=new TextDecoder();
+              file.proof.info_str=dec.decode(file.proof.info);
+            }
           }
         });
       }

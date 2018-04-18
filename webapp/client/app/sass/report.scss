@@ -1,4 +1,4 @@
-// @Last modified time: 2018-04-10T17:24:19+07:00
+// @Last modified time: 2018-04-18T21:51:48+07:00
 
 .report-wrapper {
   background-color: rgba(0,0,0,0.3);
@@ -13,6 +13,21 @@
   //  flex-flow: column;
 
 
+ hr {
+   display: flex;
+ }
+
+  hr.proof-info:before {
+    position:relative;
+    content: "Description";
+    margin-top: -1em;
+    padding-right: 0.5em;
+    background-color: white;
+    font-variant: small-caps;
+    font-style: italic;
+    font-size: small;
+  }
+
   .report {
 
     background-color: transparent;
@@ -21,12 +36,25 @@
     margin: auto;
     min-width: 256px;
 
+    .status {
+      font-weight: bold;
+      margin-bottom: 1.5em;
+    }
+
+    .hash {
+      font-variant: small-caps;
+    }
+
     .file {
       background-color: white;
       margin-bottom: 1em;
       box-shadow: 0.2em 0.2em 0.2em;
 
       .details {
+
+        hr {
+          position: flex;
+        }
 
         p, span {
           overflow: hidden;
@@ -62,6 +90,7 @@
         }
 
         ul.operations {
+          font-variant: small-caps;
           margin-top: 0.5em;
           padding: 0 1em;
           li:before {

@@ -26,6 +26,10 @@ var JSZip=require('jszip');
 const Buffer = require('safe-buffer').Buffer;
 const QRCode = require('qrcode-svg')
 
+if (!TextDecoder) {
+  const TextDecoder=require('text-encoding').TextDecoder;
+}
+
 module.exports = [
   '$q',
   '$rootScope',
@@ -54,7 +58,7 @@ module.exports = [
     var service=this;
     angular.extend(service,{
       prefix: '',
-      blocksToGo: 2, // infinite
+      blocksToGo: 2, // -1 == infinite
 
       cached_transactions: {},
       cached_blocks: {},
@@ -309,11 +313,12 @@ module.exports = [
       }, // processFiles
 
       getReadableProof: function(proof) {
+        var dec=new TextDecoder();
         return {
           hashType: proof.hashType,
           root: merkle.hashToString(proof.root),
           hash: merkle.hashToString(proof.hash),
-          info: proof.info,
+          info: dec.decode(proof.info),
           operations: (function(){
             var result=[];
             proof.operations.forEach(function(op){
@@ -359,10 +364,18 @@ module.exports = [
             if (nextFile && nextFile.name==file.name+'.txt') {
               nextFile.isInfo=true;
               $q.resolve().then(function(){
-                return fileService.read(nextFile,'readAsText');
+                return fileService.read(nextFile,'readAsArrayBuffer');
               })
               .then(function(result){
                 file.proof.info=result;
+/*
+                return merkle.hash(file.proof.info,file.proof.hashType)
+                .then(function(hash){
+                  file.proof.info_hash=hash;
+                });
+*/
+              })
+              .then(function(){
                 var json=JSON.stringify(service.getReadableProof(file.proof),false,2);
                 folder.file(file.name+'.json',json);
                 folder.file(file.name+'.svg',new QRCode(json).svg());
@@ -452,6 +465,25 @@ module.exports = [
           }
           file.proof.validated=false;
           return $q.resolve(false);
+        }
+
+        if (file.proof.info) {
+          var info_hash=file.proof.info_hash=merkle.hashToString(file.proof.info_hash);
+          var hashright;
+          if (file.proof.operations && file.proof.operations[0] && file.proof.operations[0].right) {
+            hashright=merkle.hashToString(file.proof.operations[0].right);
+          }
+          if (
+            info_hash!=merkle.hashToString(file.proof.hash)
+            && (hashright && info_hash!=hashright)
+          ) {
+            console.log('hash mismatch between description and proof !',file);
+            if (!options.silent) {
+              $window.alert('Hash mismatch between description and proof !');
+            }
+            file.proof.validated=false;
+            return $q.resolve(false);
+          }
         }
 
         var promises=[];

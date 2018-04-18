@@ -30,11 +30,16 @@
  * Controller of the merkleApp
  */
 
+ if (!TextEncoder) {
+   const TextEncoder=require('text-encoding').TextEncoder;
+ }
+
 module.exports=[
   '$scope',
   '$rootScope',
   '$timeout',
   '$window',
+  'merkle',
   'processing',
 //  'pdfService',
   'fileService',
@@ -44,6 +49,7 @@ module.exports=[
     $rootScope,
     $timeout,
     $window,
+    merkle,
     processing,
 //    pdfService,
     fileService,
@@ -183,7 +189,17 @@ module.exports=[
           }
           fileService.read(file,'readAsText')
           .then(function(result){
-            file.data=JSON.parse(result);
+            var proof=file.data=JSON.parse(result);
+            if (proof.info) {
+              var enc=new TextEncoder();
+              proof.info=enc.encode(proof.info);
+              return merkle.hash(proof.info,proof.hashType)
+              .then(function(hash){
+                proof.info_hash=hash;
+              });
+            }
+          })
+          .then(function(){
             loop();
           })
           .catch(q.reject);
