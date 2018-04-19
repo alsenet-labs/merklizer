@@ -384,7 +384,7 @@ module.exports = [
                 return fileService.read(file,'readAsArrayBuffer');
               })
               .then(function(result){
-                file.proof.info=result;
+                file.proof.data=result;
                 addFileToArchive(file);
                 loop(i+1);
               })
