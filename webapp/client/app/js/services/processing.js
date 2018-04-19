@@ -295,10 +295,12 @@ module.exports = [
         q.then(function(){
           return service.downloadArchive(queue);
         })
-        .then(function(){
-          $timeout(function(){
-            $rootScope.$broadcast('filesProcessed');
-          },150);
+        .then(function(success){
+          if (success) {
+            $timeout(function(){
+              $rootScope.$broadcast('filesProcessed');
+            },150);
+          }
         })
         .catch(function(err){
           service.hideOverlay();
@@ -352,6 +354,12 @@ module.exports = [
           var merkleRoot=merkle.getRoot(service.tree);
           var folder=zip.folder(/*merkleRoot*/);
 
+          function addFileToArchive(file) {
+            var json=JSON.stringify(service.getReadableProof(file.proof),false,2);
+            folder.file(file.name+'.json',json);
+            folder.file(file.name+'.svg',new QRCode(json).svg());
+          }
+
           (function loop(i){
             if (i>=queue.length) {
               q.resolve();
@@ -361,7 +369,29 @@ module.exports = [
             file.proof.anchors=queue.anchors;
             var nextFile=queue[i+1];
 
-            if (nextFile && nextFile.name==file.name+'.txt') {
+            // When the next file has the same name plus a '.txt' extension,
+            // include its content in proof.info (it's hash will match the first
+            // hash in the proof, ie proof.operations[0].right)
+            if (file.isInfo) {
+              // then skip such text file
+              loop(i+1);
+              return;
+
+            } else if (file.name.match(/\.txt$/i)) {
+              // When the file is a "standalone" text file, include
+              // its content in file.proof.data
+              $q.resolve().then(function(){
+                return fileService.read(file,'readAsArrayBuffer');
+              })
+              .then(function(result){
+                file.proof.info=result;
+                addFileToArchive(file);
+                loop(i+1);
+              })
+              .catch(q.reject);
+              return;
+
+            } else if (nextFile && nextFile.name==file.name+'.txt') {
               nextFile.isInfo=true;
               $q.resolve().then(function(){
                 return fileService.read(nextFile,'readAsArrayBuffer');
@@ -376,17 +406,13 @@ module.exports = [
 */
               })
               .then(function(){
-                var json=JSON.stringify(service.getReadableProof(file.proof),false,2);
-                folder.file(file.name+'.json',json);
-                folder.file(file.name+'.svg',new QRCode(json).svg());
+                addFileToArchive(file);
                 loop(i+1);
               })
               .catch(q.reject);
+              return;
 
             } else {
-              var json=JSON.stringify(service.getReadableProof(file.proof),false,2);
-              folder.file(file.name+'.json',json);
-              folder.file(file.name+'.svg',new QRCode(json).svg());
               loop(i+1);
               return;
             }
@@ -401,19 +427,21 @@ module.exports = [
               });
               FileSaver.saveAs(content, "proofs-"+merkleRoot+".zip");
               service.hideOverlay();
-              q.resolve();
+              q.resolve(true);
             });
             return q.promise;
           })
           .catch(function(err) {
             console.log(err);
+            $window.alert(err.message);
+            service.hideOverlay();
           })
 
         } catch(e) {
           console.log(e);
           q.reject(e);
-          return q.promise;
         }
+        return q.promise;
 
       }, // downloadArchive
 
