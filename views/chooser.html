@@ -1,5 +1,5 @@
-<div id="chooser" class="disable-selection">
-  <div ng-if="!$root.mobileApp && $state.current.name=='chooser'" class="container">
+<div id="chooser">
+  <div ng-if="$state.current.name=='chooser'" class="container">
     <div class="row">
       <div class="col-md">
         <p>
@@ -13,34 +13,32 @@
         </div>
       </div>
       <div class="col-md">
-        <p>
-          Validate a document with a self-contained proof or an associated proof file.
-        </p>
+        <p>Assistant for document authenticity validation process.</p>
         <div class="button-wrapper">
-          <div type="button" class="btn btn-s btn-primary" ng-click="$state.transitionTo('validateFile')">
-            <i class="fa fa-file"></i> Select File
+          <div type="button" class="btn btn-s btn-primary" ng-click="$state.transitionTo('validate')" >
+            <i class="fa fa-cogs"></i> Validate
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div ng-if="$root.mobileApp && $state.current.name=='chooser'" class="container">
+  <div ng-if="$state.current.name=='validate'" class="container">
     <div class="row">
+      <div class="col-md">
+        <p>
+          Select a file with a self-contained proof, or a file plus the associated proof file.
+        </p>
+        <div class="button-wrapper">
+          <div type="button" class="btn btn-s btn-primary" ng-click="$state.transitionTo('validateFile')">
+            <i class="fa fa-file"></i> Select File
+          </div>
+        </div>
+      </div>
       <div class="col-md">
         <p>Validate a document from a QRCode.</p>
         <div class="button-wrapper">
           <div type="button" class="btn btn-s btn-primary" ng-click="$state.transitionTo('validateQRCode')" >
             <i class="fa fa-camera"></i> Scan QRCode
-          </div>
-        </div>
-      </div>
-      <div class="col-md">
-        <p>
-          Validate a document with a self-contained proof or an associated proof file.
-        </p>
-        <div class="button-wrapper">
-          <div type="button" class="btn btn-s btn-primary" ng-click="$state.transitionTo('validateFile')">
-            <i class="fa fa-file"></i> Select File
           </div>
         </div>
       </div>
