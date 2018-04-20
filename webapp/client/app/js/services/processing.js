@@ -160,7 +160,7 @@ module.exports = [
 
                   if (!looping) {
                     service.showOverlay({
-                      message: 'Waiting for more blocks...',
+                      message: 'Waiting for block confirmations...',
                       showProgress: true,
                       showButton: false
                     });
@@ -195,7 +195,7 @@ module.exports = [
                         } else {
                           n=blocksToGo;
                         }
-                        message='Waiting for '+n+' more block'+(n>1?'s':'')+'...';
+                        message='Waiting for '+n+' more confirmation'+(n>1?'s':'')+'...';
 
                       } else {
                         if (blocksCount>0) {
@@ -301,7 +301,7 @@ module.exports = [
         .then(function(success){
           if (success) {
             $timeout(function(){
-              $rootScope.$broadcast('filesProcessed');
+              $rootScope.$broadcast('filesProcessed',{files: queue});
             },150);
           }
         })

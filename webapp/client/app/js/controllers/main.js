@@ -76,8 +76,8 @@ module.exports=[
             $scope.validate(file);
         });
 
-        $scope.$on('filesProcessed',function(event,files){
-          $scope.$state.go('processed',{files: files});
+        $scope.$on('filesProcessed',function(event,options){
+          $scope.$state.go('processed',options);
         });
 
 /*

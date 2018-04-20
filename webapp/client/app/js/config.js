@@ -60,7 +60,10 @@ module.exports=[
       templateUrl: 'views/processed.html',
       controller: 'ProcessedCtrl',
       controllerAs: 'processed',
-      title: 'Processed'
+      title: 'Processed',
+      params: {
+        files: null
+      }
     })
     .state('validate', {
       url: '/validate',
