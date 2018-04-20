@@ -1,4 +1,4 @@
-// @Last modified time: 2018-04-18T21:51:48+07:00
+// @Last modified time: 2018-04-20T15:23:14+07:00
 
 .report-wrapper {
   background-color: rgba(0,0,0,0.3);
@@ -42,7 +42,8 @@
     }
 
     .hash {
-      font-variant: small-caps;
+      font-family: monospace;
+      font-variant: all-small-caps;
     }
 
     .file {
@@ -90,7 +91,8 @@
         }
 
         ul.operations {
-          font-variant: small-caps;
+          font-family: monospace;
+          font-variant: all-small-caps;
           margin-top: 0.5em;
           padding: 0 1em;
           li:before {

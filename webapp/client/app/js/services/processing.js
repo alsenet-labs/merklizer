@@ -29,6 +29,9 @@ const QRCode = require('qrcode-svg')
 if (!TextDecoder) {
   const TextDecoder=require('text-encoding').TextDecoder;
 }
+if (!TextEncoder) {
+  const TextDecoder=require('text-encoding').TextEncoder;
+}
 
 module.exports = [
   '$q',
@@ -398,12 +401,6 @@ module.exports = [
               })
               .then(function(result){
                 file.proof.info=result;
-/*
-                return merkle.hash(file.proof.info,file.proof.hashType)
-                .then(function(hash){
-                  file.proof.info_hash=hash;
-                });
-*/
               })
               .then(function(){
                 addFileToArchive(file);
@@ -469,6 +466,19 @@ module.exports = [
 
       getBlockDate: function(block) {
         return new Date(block.timestamp*1000).toISOString();
+      },
+
+      encodeAndHash: function(proof,propertyName){
+        if (proof[propertyName] && !proof[propertyName+'_hash']) {
+          var enc=new TextEncoder();
+          proof[propertyName]=enc.encode(proof[propertyName]);
+          return merkle.hash(proof[propertyName],proof.hashType)
+          .then(function(hash){
+            proof[propertyName+'_hash']=hash;
+          });
+        } else {
+          return $q.resolve();
+        }
       },
 
       validate: function(file, options) {

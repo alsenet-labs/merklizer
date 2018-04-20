@@ -60,7 +60,6 @@ module.exports=[
           QRCodeService.destroy(console.log);
         });
         QRCodeService.scan(function(err,text){
-//          $scope.$apply()
           $timeout(function(){
             $scope.callback(err,text);
           });
@@ -68,32 +67,48 @@ module.exports=[
       },
       callback: function(err, text) {
         if (err) {
+          console.log(text);
           $scope.$root.$broadcast('showOverlay',{
-            message: text,
+            message: err.message,
             showButton: true,
             buttonText: 'Retry'
           });
           return;
+        }
+        while(text.charCodeAt(0)==65279) {
+          text=text.substr(1);
         }
         var proof;
         try {
           proof=JSON.parse(text);
         } catch(e) {
+          console.log(text);
           $scope.$root.$broadcast('showOverlay',{
-            message: text,
+            message: e.message,
             showButton: true,
             buttonText: 'Retry'
           });
           return;
         }
-        $q.resolve({proof: proof})
-        .then(processing.validate)
+        processing.encodeAndHash(proof,'info')
+        .then(function(){
+          return processing.validate({proof: proof});
+        })
         .then(function(validated){
           if (validated) {
             $scope.$state.go('report',{files: [{proof: proof}]});
           } else {
             $scope.$state.go('validate');
           }
+        })
+        .catch(function(err){
+          console.log(err,proof);
+          $scope.$root.$broadcast('showOverlay',{
+            message: err.message,
+            showButton: true,
+            buttonText: 'Retry'
+          });
+          return;
         });
       }
     });

@@ -191,12 +191,7 @@ module.exports=[
           .then(function(result){
             var proof=file.data=JSON.parse(result);
             if (proof.info) {
-              var enc=new TextEncoder();
-              proof.info=enc.encode(proof.info);
-              return merkle.hash(proof.info,proof.hashType)
-              .then(function(hash){
-                proof.info_hash=hash;
-              });
+              return processing.encodeAndHash(proof,'info');
             }
           })
           .then(function(){
