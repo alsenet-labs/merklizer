@@ -1,23 +1,23 @@
-<div ng-cloak id="merkle-files" ng-cloak  files-read="false" files-drop="onFilesDropped($files, $event)" class="disable-selection" ng-class="{shrink: queue.length && $state.current.name=='anchor', blur: $root._showOverlay}" >
+<div ng-cloak id="merkle-files" ng-cloak  files-read="false" files-drop="onFilesDropped($files, $event)" class="disable-selection" ng-class="{shrink: queue.length, blur: $root._showOverlay}" >
   <div class="dashes" ng-if="!$root.mobileApp && !$root._showOverlay" ng-class="{over: mouseOverLabel}"></div>
 
-  <div class="nofilesyet d-flex w-100 justify-content-center" ng-class="{'h-100': !queue.length||$state.current.name=='validateFile', 'h-25': queue.length&&$state.current.name=='anchor'}">
+  <div class="nofilesyet d-flex w-100 justify-content-center" ng-class="{'h-100': !queue.length, 'h-25': queue.length}">
     <div class="row align-self-center" ng-if="true">
-      <label data-toogle="tooltip" title="Click or drop files here" ng-mouseenter="mouseEnter()" ng-mouseleave="mouseLeave()">
-        <h3 class="text-nowrap">Click or drop files here.</h3>
+      <label data-toogle="tooltip" ng-attr-title="{{click_or_drop_files_here}}" ng-mouseenter="mouseEnter()" ng-mouseleave="mouseLeave()">
+        <h3 class="text-nowrap">{{click_or_drop_files_here}}</h3>
         <input type="file" multiple accept="{{mimeTypes}}" style="display: none"  ng-model="selection" on-change="onFilesChanged($event)" />
       </label>
     </div>
  </div>
 
-  <div class="bottom" ng-if="queue.length && $state.current.name=='anchor'">
+  <div class="bottom" ng-if="queue.length">
     <div class="anchor-buttons">
       <div>
         <div>
-          <div type="button" class="btn btn-s btn-danger" ng-click="removeAll()">
+          <div ng-class="{anchor: $state.current=='anchor'}" type="button" class="btn btn-s btn-danger" ng-click="removeAll()">
             <span class="fa fa-recycle"></span> Clear List
           </div>
-          <div type="button" class="btn btn-s btn-primary" ng-click="process()">
+          <div ng-class="{anchor: $state.current=='anchor'}" ng-if="$state.current.name=='anchor'" type="button" class="btn btn-s btn-primary" ng-click="process()">
             <span class="fa fa-link"></span> Process {{queue.length}} file{{ queue.length > 1 ? 's' : '' }}
           </div>
         </div>

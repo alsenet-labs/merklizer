@@ -68,6 +68,12 @@ module.exports=[
         value: 0
       },
       init: function() {
+        if ($scope.mobileApp) {
+          $scope.click_or_drop_files_here="Click here.";
+        } else {
+          $scope.click_or_drop_files_here="Click or drop files here.";
+        }
+
       }, // init
 
       mouseEnter: function(){
