@@ -410,6 +410,7 @@ module.exports = [
               return;
 
             } else {
+              addFileToArchive(file);
               loop(i+1);
               return;
             }
