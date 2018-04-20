@@ -61,7 +61,7 @@ module.exports = [
     var service=this;
     angular.extend(service,{
       prefix: '',
-      blocksToGo: 2, // -1 == infinite
+      blocksToGo: 1, // -1 == infinite
 
       cached_transactions: {},
       cached_blocks: {},
