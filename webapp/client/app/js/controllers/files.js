@@ -68,10 +68,6 @@ module.exports=[
         value: 0
       },
       init: function() {
-        $scope.$on('filesProcessed',function(event,queue){
-          $scope.$state.go('processed');
-        });
-
       }, // init
 
       mouseEnter: function(){

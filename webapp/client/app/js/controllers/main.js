@@ -75,6 +75,11 @@ module.exports=[
         $scope.$on('validateFile',function(event,file){
             $scope.validate(file);
         });
+
+        $scope.$on('filesProcessed',function(event,files){
+          $scope.$state.go('processed',{files: files});
+        });
+
 /*
         $scope.$on('showMetadata',function(event,file){
             $scope.showMetadata(file);
