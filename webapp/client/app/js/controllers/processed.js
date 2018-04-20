@@ -57,7 +57,7 @@ module.exports=[
         }
       },
       click: function() {
-        $window.location.assign('/');
+        $window.location.reload();
       }
     });
 
