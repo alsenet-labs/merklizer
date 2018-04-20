@@ -1,4 +1,4 @@
-// @Last modified time: 2018-04-20T21:10:12+07:00
+// @Last modified time: 2018-04-21T00:23:08+07:00
 
 .report-wrapper {
   background-color: rgba(0,0,0,0.3);
@@ -91,8 +91,10 @@
         }
 
         ul.operations {
-          font-family: monospace;
-          font-variant: all-small-caps;
+          .key {
+            text-transform: capitalize;
+            font-size: small;
+          }
           margin-top: 0.5em;
           padding: 0 1em;
           li:before {
@@ -102,6 +104,11 @@
         }
 
         ul.anchors {
+          a {
+            font-family: monospace;
+            font-variant: all-small-caps;
+          }
+
           padding: 0;
           li {
             margin-top: 0.5em;
