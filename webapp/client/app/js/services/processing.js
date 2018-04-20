@@ -712,7 +712,7 @@ module.exports = [
         })
         .then(function(validated){
           if (!options.silent) {
-            $window.alert('The proof was '+(validated?'successfuly':'NOT')+' validated !');
+    //        $window.alert('The proof was '+(validated?'successfuly':'NOT')+' validated !');
           }
           return validated;
 
