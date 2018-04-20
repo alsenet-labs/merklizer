@@ -51,6 +51,10 @@ module.exports=[
 
     angular.extend($scope,{
       init: function(){
+        if (!$scope.$stateParams.files || !$scope.$stateParams.files.length) {
+          $scope.$state.go('chooser');
+          return;
+        }
       },
       click: function() {
         $window.location.assign('/');
