@@ -51,9 +51,12 @@ module.exports=[
 
       init: function(){
         try {
+          if (!config.enabled) {
+            return;
+          }
           service.networkId=config.network;
           service.network=bitcoin.networks[config.network];
-          if (!service.network) throw new Error('unkonwn network: '+config.network);
+          if (!service.network) throw new Error('unknown network: '+config.network);
           if (!service.key.private) throw new Error('config.key.private cannot be null.');
           service.keyPair=new bitcoin.ECPair.fromWIF(service.key.private,service.network);
           service.key.public=service.keyPair.getAddress();
