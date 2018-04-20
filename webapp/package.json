@@ -46,7 +46,6 @@
     "angular-animate": "^1.6.8",
     "angular-file-saver": "^1.1.3",
     "angular-files-drop": "git+https://github.com/luxigo/angular-files-drop#37fbf6e84ed52dd9a049794d16e0da55058018fd",
-    "angular-smart-table": "^2.1.11",
     "angular-touch": "^1.6.8",
     "angular-ui-bootstrap": "^2.5.6",
     "asmcrypto.js": "^0.21.0",

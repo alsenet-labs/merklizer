@@ -34,14 +34,12 @@ require('bootstrap');
 require('@uirouter/angularjs/release/angular-ui-router.js');
 require('angular-ui-bootstrap');
 require('angular-files-drop');
-require('angular-smart-table');
 require('angular-file-saver');
 
 var app=angular.module('merkleApp',[
   'ui.router',
   'ui.bootstrap',
   'angular-files-drop',
-  'smart-table',
   'ngFileSaver'
 ])
 .config(require('./config.js'))
