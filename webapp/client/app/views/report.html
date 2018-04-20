@@ -19,10 +19,10 @@
             <span>The {{::file.proof.hashType}} hash of the text above match the hash stored in the proof <span class="hash">{{::file.proof.info_hash}}</span></span>
           </li>
           <li ng-if="file.hash">
-            <span>The file hash match the {{::file.proof.hashType}} hash stored in the proof <span class="hash">{{::file.proof.hash}}</span>)</span>
+            <span>The file hash match the {{::file.proof.hashType}} hash stored in the proof <span class="hash">{{::file.proof.hash}}</span></span>
           </li>
           <li ng-if="file.proof.operations.length">
-            <span ng-if="file.hash">The Merkle root (<span class="hash">{{::file.proof.root}}</span>) has been recomputed sucessfuly from the file hash after the following operation<span ng-if="file.proof.operations.length>1">s</span>:</span>
+            <span ng-if="file.hash">The Merkle root <span class="hash">{{::file.proof.root}}</span> has been recomputed sucessfuly from the file hash after the following operation<span ng-if="file.proof.operations.length>1">s</span>:</span>
             <span ng-if="!file.hash && !file.proof.info">The Merkle root <span class="hash">{{::file.proof.root}}</span> has been recomputed sucessfuly from the {{::file.proof.hashType}} hash stored in the proof <span class="hash">{{::file.proof.hash}}</span> after the following operation<span ng-if="file.proof.operations.length>1">s</span>:</span>
             <span ng-if="!file.hash && file.proof.info">The Merkle root <span class="hash">{{::file.proof.root}}</span> has been recomputed sucessfuly from the hash of the text above, after the following operation<span ng-if="file.proof.operations.length>1">s</span>:</span>
             <ul class="operations">
