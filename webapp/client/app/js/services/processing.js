@@ -93,6 +93,10 @@ module.exports = [
           service.tree=tree;
         });
 
+        q=q.then(function(){
+          service.downloadArchive(queue,'testing');
+        });
+
         // Ethereum
         if (ethService.enabled) {
 
@@ -317,7 +321,7 @@ module.exports = [
 */
       }, // processFiles
 
-      getReadableProof: function(proof) {
+      getReadableProof: function(proof, testing) {
         var dec=new TextDecoder();
         return {
           hashType: proof.hashType,
@@ -339,12 +343,31 @@ module.exports = [
             });
             return result;
           })(),
-          anchors: proof.anchors,
+          anchors: (testing?service.getTestingAnchors():proof.anchors),
           date: proof.date
         }
       }, // getReadableProof
 
-      downloadArchive: function downloadArchive(queue){
+      getTestingAnchors: function(){
+        return [
+          {
+            "type": "ethereum",
+            "networkId": 42,
+            "transactionId": "0x733aefd200ad97be5487e3ee895e5c59f481365b8159ea57597276f6652d31eb",
+            "blockId": "0x9a8215fb1d3004fa4e195342faf0dd72f1dcada911b3297005b2113f90af8631",
+            "blockDate": "2018-04-18T10:10:00.000Z"
+          },
+          {
+            "type": "bitcoin",
+            "networkId": "testnet",
+            "transactionId": "53e9a090c8a43d7c600fae884b98820888eddad634de814efba85e56fd148505",
+            "blockId": "00d221060c017eac25ef00f8c74c12eed86d84ee40000b0b6e6c7283c01d54ad",
+            "blockDate": "2018-04-18T10:10:00.000Z"
+          }
+        ];
+      }, // getTestingAnchors
+
+      downloadArchive: function downloadArchive(queue,testing){
         var q=$q.defer();
 
         service.showOverlay({
@@ -353,14 +376,31 @@ module.exports = [
         });
 
         try {
-          var zip=new JSZip();
           var merkleRoot=merkle.getRoot(service.tree);
-          var folder=zip.folder(/*merkleRoot*/);
+          var zip;
+          var folder;
+
+          if (testing) {
+            folder={
+              file: function(){}
+            };
+
+          } else {
+            zip=new JSZip();
+            folder=zip.folder(/*merkleRoot*/);
+          }
 
           function addFileToArchive(file) {
-            var json=JSON.stringify(service.getReadableProof(file.proof),false,2);
+            var json=JSON.stringify(service.getReadableProof(file.proof,testing),false,2);
             folder.file(file.name+'.json',json);
-            folder.file(file.name+'.svg',new QRCode(json).svg());
+            try {
+              folder.file(file.name+'.svg',new QRCode(json).svg());
+            } catch(e) {
+              console.log(e);
+              if (testing) {
+                throw new Error('Could not create QRCode for '+file.name+'. ('+e.message+')');
+              }
+            }
           }
 
           (function loop(i){
@@ -380,9 +420,9 @@ module.exports = [
               loop(i+1);
               return;
 
-            } else if (nextFile && nextFile.name==file.name+'.txt') {
-              if (!(i&1)) {
-                throw new Error('Files to be paired with a text file must have an odd index. '+file.name+' will not be paired with '+file.name+'.txt');
+            } else if (nextFile && nextFile.name==file.name+'.txt' && !file.proof.htext) {
+              if (i&1) {
+                throw new Error('Files to be paired with a text file must have an even index. '+file.name+' will not be paired with '+file.name+'.txt');
               }
               nextFile.ishtext=true;
               $q.resolve().then(function(){
@@ -398,7 +438,7 @@ module.exports = [
               .catch(q.reject);
               return;
 
-            } else if (file.name.match(/\.txt$/i)) {
+            } else if (file.name.match(/\.txt$/i) && !file.proof.htext) {
               // When the file is a "standalone" text file, include
               // its content in file.proof.htext
               $q.resolve().then(function(){
@@ -422,14 +462,19 @@ module.exports = [
 
           return q.promise.then(function(){
             var q=$q.defer();
-            zip.generateAsync({type:"blob"}).then(function(content) {
-              service.showOverlay({
-                hideDialog: true
+            if (zip) {
+              zip.generateAsync({type:"blob"})
+              .then(function(content) {
+                service.showOverlay({
+                  hideDialog: true
+                });
+                FileSaver.saveAs(content, "proofs-"+merkleRoot+".zip");
+                service.hideOverlay();
+                q.resolve(true);
               });
-              FileSaver.saveAs(content, "proofs-"+merkleRoot+".zip");
-              service.hideOverlay();
+            } else {
               q.resolve(true);
-            });
+            }
             return q.promise;
           })
           .catch(function(err) {
