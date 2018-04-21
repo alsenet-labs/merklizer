@@ -90,7 +90,7 @@ module.exports=[
           });
           return;
         }
-        processing.encodeAndHash(proof,'info')
+        processing.encodeAndHash(proof,'htext')
         .then(function(){
           return processing.validate({proof: proof});
         })

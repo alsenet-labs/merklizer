@@ -1,4 +1,4 @@
-// @Last modified time: 2018-04-21T00:23:08+07:00
+// @Last modified time: 2018-04-21T18:19:16+07:00
 
 .report-wrapper {
   background-color: rgba(0,0,0,0.3);
@@ -17,7 +17,7 @@
    display: flex;
  }
 
-  hr.proof-info:before {
+  hr.proof-htext:before {
     position:relative;
     content: "Hashed Text";
     margin-top: -1em;

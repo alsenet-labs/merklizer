@@ -61,9 +61,9 @@ module.exports=[
         angular.forEach($scope.$stateParams.files,function(file){
           if (file.proof) {
             file.proof.root=merkle.hashToString(file.proof.root);
-            if (file.proof.info) {
+            if (file.proof.htext) {
               var dec=new TextDecoder();
-              file.proof.info_str=dec.decode(file.proof.info);
+              file.proof.htext_str=dec.decode(file.proof.htext);
             }
           }
         });

@@ -195,8 +195,8 @@ module.exports=[
           fileService.read(file,'readAsText')
           .then(function(result){
             var proof=file.data=JSON.parse(result);
-            if (proof.info) {
-              return processing.encodeAndHash(proof,'info');
+            if (proof.htext) {
+              return processing.encodeAndHash(proof,'htext');
             }
           })
           .then(function(){

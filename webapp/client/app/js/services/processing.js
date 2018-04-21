@@ -323,7 +323,7 @@ module.exports = [
           hashType: proof.hashType,
           root: merkle.hashToString(proof.root),
           hash: merkle.hashToString(proof.hash),
-          info: dec.decode(proof.info),
+          htext: dec.decode(proof.htext),
           operations: (function(){
             var result=[];
             proof.operations.forEach(function(op){
@@ -373,36 +373,39 @@ module.exports = [
             var nextFile=queue[i+1];
 
             // When the next file has the same name plus a '.txt' extension,
-            // include its content in proof.info (it's hash will match the first
+            // include its content in proof.htext (it's hash will match the first
             // hash in the proof, ie proof.operations[0].right)
-            if (file.isInfo) {
+            if (file.ishtext) {
               // then skip such text file
               loop(i+1);
               return;
 
-            } else if (file.name.match(/\.txt$/i)) {
-              // When the file is a "standalone" text file, include
-              // its content in file.proof.data
+            } else if (nextFile && nextFile.name==file.name+'.txt') {
+              if (!(i&1)) {
+                throw new Error('Files to be paired with a text file must have an odd index. '+file.name+' will not be paired with '+file.name+'.txt');
+              }
+              nextFile.ishtext=true;
               $q.resolve().then(function(){
-                return fileService.read(file,'readAsArrayBuffer');
+                return fileService.read(nextFile,'readAsArrayBuffer');
               })
               .then(function(result){
-                file.proof.data=result;
+                file.proof.htext=result;
+              })
+              .then(function(){
                 addFileToArchive(file);
                 loop(i+1);
               })
               .catch(q.reject);
               return;
 
-            } else if (nextFile && nextFile.name==file.name+'.txt') {
-              nextFile.isInfo=true;
+            } else if (file.name.match(/\.txt$/i)) {
+              // When the file is a "standalone" text file, include
+              // its content in file.proof.htext
               $q.resolve().then(function(){
-                return fileService.read(nextFile,'readAsArrayBuffer');
+                return fileService.read(file,'readAsArrayBuffer');
               })
               .then(function(result){
-                file.proof.info=result;
-              })
-              .then(function(){
+                file.proof.htext=result;
                 addFileToArchive(file);
                 loop(i+1);
               })
@@ -506,15 +509,15 @@ module.exports = [
           return $q.resolve(false);
         }
 
-        if (file.proof.info) {
-          var info_hash=file.proof.info_hash=merkle.hashToString(file.proof.info_hash);
+        if (file.proof.htext) {
+          var htext_hash=file.proof.htext_hash=merkle.hashToString(file.proof.htext_hash);
           var hashright;
           if (file.proof.operations && file.proof.operations[0] && file.proof.operations[0].right) {
             hashright=merkle.hashToString(file.proof.operations[0].right);
           }
           if (
-            info_hash!=merkle.hashToString(file.proof.hash)
-            && (hashright && info_hash!=hashright)
+            htext_hash!=merkle.hashToString(file.proof.hash)
+            && (hashright && htext_hash!=hashright)
           ) {
             console.log('hash mismatch between description and proof !',file);
             if (!options.silent) {
