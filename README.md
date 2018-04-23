@@ -30,18 +30,26 @@ __Under active development, don't use it for production yet.__
 
 # README
 
-The actual demo is hashing files using SHA512-256, building a Merkle
+The actual demo is hashing files using SHA512-trunc, building a Merkle
 tree from those hashes and anchoring the Merkle root on the Bitcoin and
 Ethereum blockchains.
 
 On the Ethereum blockchain (using the [MetaMask browser extension](https://metamask.io/))
-or a local node.
+or a local node if available. (We recommend to use the Kovan testing network for the demo (faster)).
 
 On the Bitcoin blockchain using a public service (eg: https://blockexplorer.com).
+(Anchoring on Bitcoin testnet is currently disabled for the online demo)
 
 After the blockchain transaction appears on the blockchain(s), it allows
 you to download a zip archive containing all the Merkle proofs and the
-anchoring details, one json per input file.
+anchoring details, one json per file and one QRCode per json.
+
+When the file to be anchored is a text file, its content is added to the json.
+
+When for each file there is a .txt file associated, the text file content is
+added to the first file's json. Thus a description can be displayed when
+validating the file with the json (or the QRCode alone), and its hash is part
+of the proof.
 
 Files are NOT transmitted to the server, everything occurs client-side.
 
@@ -71,7 +79,7 @@ Run in the browser without cordova:
 ```
 make run-webapp
 ```
-Run in the browser with cordova:
+Run in the browser with cordova: [only for development, because camera is not doing well currently using WebRTC]
 ```
 make run-cordova
 ```
@@ -80,8 +88,15 @@ Run on Android with cordova:
 make run-cordova-android
 ```
 
-Note: gh-pages branch is made of content of cordova/platforms/browser/www
+Note: gh-pages branch is made of content of webapp/dist/
 
+## Android Application Privacy Policy
+* The Android application use your camera to scan QRCodes.
+
+* Processing is done locally, data transmitted by our application to external
+services is limited to the transaction and block hashes when retrieving
+transactions details, and to the account numbers associated when the user
+request accounts details interactively.
 
 ## Troubleshooting
 
