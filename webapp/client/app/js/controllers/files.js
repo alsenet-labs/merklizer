@@ -97,11 +97,12 @@ module.exports=[
 
       removeDuplicates: function(){
         var fileList=$scope.queue;
+        var hashType=fileList[0].hashType;
         var hasDuplicate=0;
         var removedDuplicate=0;
         angular.forEach(fileList,function(file, i){
           for(var j=fileList.length-1; j>i; --j) {
-            if (fileList[j].hash.toString()==fileList[i].hash.toString()) {
+            if (fileList[j].hash_str[hashType]==fileList[i].hash_str[hashType]) {
               if (
                 fileList[j].name!=fileList[i].name
                 || fileList[j].size!=fileList[i].size
@@ -237,8 +238,12 @@ module.exports=[
           fileService.read(file,'readAsArrayBuffer')
           .then(merkle.hash)
           .then(function(result){
-            file.hash=result;
-            file.hash_str=merkle.hashToString(file.hash);
+            var hashType=merkle.hashType;
+            file.hash={};
+            file.hash[hashType]=result;
+            file.hash_str={};
+            file.hash_str[hashType]=merkle.hashToString(result);
+            file.hashType=hashType;
           })
           .then(loop)
           .catch(q.reject);

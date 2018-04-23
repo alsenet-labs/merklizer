@@ -88,9 +88,21 @@ module.exports = [
           queue.anchors.push(anchor);
         }
 
-        var q=merkle.compute(queue)
+        var input=[];
+        queue.forEach(function(file){
+          input.push({hash: file.hash[file.hashType]});
+        });
+
+        var q=merkle.compute(input)
         .then(function(tree){
           service.tree=tree;
+          var leaves=service.tree[service.tree.length-1];
+          queue.forEach(function(file,i){
+            if (file.hash[file.hashType].toString()!=leaves[i].hash.toString()) {
+              throw new Error('unexpected error');
+            }
+            file.proof=leaves[i].proof;
+          });
         });
 
         q=q.then(function(){
@@ -225,7 +237,7 @@ module.exports = [
                       $timeout(function(){
                         waitNextBlocks(receipt,true)
                         .then(qqq.resolve);
-                      },20000);
+                      },15000);
                       return qqq.promise;
                     }
                   });
@@ -545,7 +557,7 @@ module.exports = [
           return $q.resolve(file.proof.validated);
         }
 
-        if (file.hash && merkle.hashToString(file.proof.hash)!=merkle.hashToString(file.hash)) {
+        if (file.hash && merkle.hashToString(file.proof.hash)!=merkle.hashToString(file.hash[file.proof.hashType])) {
           console.log('hash mismatch between file and proof !',file);
           if (!options.silent) {
             $window.alert('Hash mismatch between file and proof !');
@@ -659,7 +671,7 @@ module.exports = [
           });
 
           // check file hash
-          if (file.hash && merkle.hashToString(file.hash)!=file.proof.hash) {
+          if (file.hash && merkle.hashToString(file.hash[file.proof.hashType])!=file.proof.hash) {
             throw new Error('File hash mismatch !');
           }
 

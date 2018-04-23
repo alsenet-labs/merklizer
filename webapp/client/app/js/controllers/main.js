@@ -163,18 +163,68 @@ module.exports=[
       }, // validate
 
       filesReady: function(queue) {
+        // associate proof with file
         $scope.readProofs($scope.proofs)
         .then(function(proofs){
-          // associate proof with file
-          proofs.forEach(function(proof){
-            queue.some(function(file){
-              if (file.hash_str==proof.data.hash) {
-                file.proof=proof.data;
-                return true;
+          var q=$q.defer();
+          (function proofloop(p){
+            var proof=proofs[p];
+            if (!proof) {
+              q.resolve();
+              return;
+            }
+            var qq=$q.defer();
+            (function fileloop(f){
+              var file=queue[f];
+              if (!file) {
+                qq.resolve();
+                return;
               }
-            });
+              if (file.proof) {
+                fileloop(f+1);
+                return;
+              }
+              var qqq=$q.resolve();
+              // compute hash if proof.hashType is not the one used to spot duplicates
+              if (!file.hash[proof.data.hashType]) {
+                qqq=qqq.then(function(){
+                  return fileService.read(file,'readAsArrayBuffer')
+                  .then(function(buf) {
+                    return merkle.hash(buf,proof.data.hashType);
+                  })
+                  .then(function(result){
+                    file.hash[proof.data.hashType]=result;
+                    file.hash_str[proof.data.hashType]=merkle.hashToString(result);
+                  })
+                });
+              }
+              qqq.then(function(){
+                if (file.hash_str[proof.data.hashType]==proof.data.hash) {
+                  file.proof=proof.data;
+                  qq.resolve();
+                } else {
+                  fileloop(f+1);
+                }
+              })
+              .catch(qq.reject);
+
+            })(0);
+
+            qq.promise.then(function(){
+              proofloop(p+1);
+            })
+            .catch(q.reject);
+
+          })(0);
+
+          q.promise.then(function(){
+            processing.validateAll(queue);
+          })
+          .catch(function(err){
+            console.log(err);
+            $window.alert(err.message);
           });
-          processing.validateAll(queue);
+
         });
       },
 
