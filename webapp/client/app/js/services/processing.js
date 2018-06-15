@@ -23,8 +23,10 @@
 'use strict';
 
 var JSZip=require('jszip');
-const Buffer = require('safe-buffer').Buffer;
-const QRCode = require('qrcode-svg')
+const Buffer=require('safe-buffer').Buffer;
+const QRCode=require('qrcode-svg')
+const jsrsasign=require('jsrsasign');
+const verify=require('sign-or-verify').verify;
 
 if (!TextDecoder) {
   const TextDecoder=require('text-encoding').TextDecoder;
@@ -742,13 +744,71 @@ module.exports = [
               if (anchor.blockId!=transaction.blockhash) {
                 throw new Error('Bitcoin block hash mismatch');
               }
-              return validateAnchor(file,anchor);
+              return validateAnchor(file,anchor)
+              .then(function(validated){
+                if (!validated) {
+                  return false;
+                } else {
+                  return validatePubkey[anchor.type](anchor)
+                  .then(function(){
+                    return validated;
+                  });
+                }
+              });
             });
           });
         }
 
+        function randomString(length) {
+          const zero='0'.charCodeAt(0);
+          const A='A'.charCodeAt(0);
+          const a='a'.charCodeAt(0);
+          var c;
+          var s=[];
+          while(s.length<length) {
+            var r=Math.floor(Math.random()*62);
+            if (r<10) c=String.fromCharCode(zero+r);
+            else if (r<36) c=String.fromCharCode(A+r-10);
+            else c=String.fromCharCode(a+r-36);
+            s.push(c);
+          }
+          return s.join('');
+         }
+
+        var validatePubkey={
+          ethereum: function validateEthereumPubkey(anchor){
+            return false;
+          },
+          bitcoin: function validateBitcoinPubKey(anchor){
+            var q=$q.defer();
+            btcService.getPublicKey(anchor.transaction,anchor.vin_index)
+            .then(function(pubKey){
+              var token=randomString(32);
+              request.get([anchor.url||'http://localhost:3080','sign',pubKey.address,token].join('/'), function(err, res, body){
+                if(err) throw err;
+                var reply=JSON.parse(body);
+                var key=jsrsasign.KEYUTIL.getKey(pubkey.pkcs8,null,'pkcs8pub');
+                verify({
+                  algorithm: 'SHA256withECDSA',
+                  key: key,
+                  data: token,
+                  sigString: reply.signature
+                })
+                .then(function(success){
+                  anchor.urlCertificate=res.req.getPeerCertificate();
+                  anchor.urlCanSign=success;
+                  q.resolve();
+                })
+                .catch(q.reject);
+              });
+            });
+            return q.promise;
+          }
+        };
+
         return $q.all(promises).then(function(){
           var validated=false;
+          // validation sucessful only when all anchors have been validated
           file.proof.anchors.some(function(anchor){
             if (anchor.validated!==undefined) {
               validated=anchor.validated;
