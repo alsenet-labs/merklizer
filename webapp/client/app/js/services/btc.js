@@ -59,7 +59,7 @@ module.exports=[
           if (!service.network) throw new Error('unknown network: '+config.network);
           if (!service.key.private) throw new Error('config.key.private cannot be null.');
           service.keyPair=new bitcoin.ECPair.fromWIF(service.key.private,service.network);
-          service.key.public=service.keyPair.getAddress();
+          service.address=service.keyPair.getAddress();
         } catch(e) {
           $window.alert('Could not initialize Bitcoin wallet, check config.btc.js. Error message was: "'+e.message+'"');
         }
@@ -67,7 +67,7 @@ module.exports=[
 
       getUnspentOutputs: function(){
         var q=$q.defer();
-        request.get(config.apiUrl + 'addr/' + service.key.public + '/utxo', function(err, res, body){
+        request.get(config.apiUrl + 'addr/' + service.address + '/utxo', function(err, res, body){
           if (err) {
             console.log(err);
             q.reject(err);
@@ -86,7 +86,7 @@ module.exports=[
 
       getBalance: function(){
         var q=$q.defer();
-        request.get(config.apiUrl + 'addr/' + service.key.public + '/balance', function(err, res, body){
+        request.get(config.apiUrl + 'addr/' + service.address + '/balance', function(err, res, body){
           if (err) {
             console.log(err);
             q.reject(err);
@@ -256,6 +256,26 @@ module.exports=[
           }
         });
         return q.promise;
+      },
+
+      getPublicKey: function(tx,vin_index) {
+        return $q.resolve().then(function(){
+          if (typeof tx == 'string') {
+            tx=JSON.parse(tx);
+          }
+          var scriptSig=new Buffer(tx.vin[vin_index||0].scriptSig.hex,'hex');
+          var chunks=bitcoin.script.decompile(scriptSig);
+          var dec=bitcoin.script.toASM(chunks);
+          var pub=dec.split(' ')[1];
+          var ecPair=bitcoin.ECPair.fromPublicKeyBuffer(new Buffer(pub,'hex'),bitcoin.networks[config.network]);
+          var plain=ecPair.Q.getEncoded(false).toString('hex');
+          return {
+            address: ecPair.getAddress(),
+            plain: plain,
+            encoded: ecPair.Q.getEncoded(true).toString('hex'),
+            pkcs8: '3056301006072a8648ce3d020106052b8104000a034200'+plain
+          }
+        });
       }
 
     });
