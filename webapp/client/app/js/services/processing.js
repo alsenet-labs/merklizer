@@ -27,6 +27,7 @@ const Buffer=require('safe-buffer').Buffer;
 const QRCode=require('qrcode-svg')
 const jsrsasign=require('jsrsasign');
 const verify=require('sign-or-verify').verify;
+const request=require('request');
 
 if (!TextDecoder) {
   const TextDecoder=require('text-encoding').TextDecoder;
@@ -783,24 +784,32 @@ module.exports = [
             var q=$q.defer();
             btcService.getPublicKey(anchor.transaction,anchor.vin_index)
             .then(function(pubKey){
+              console.log('pubkey',pubKey);
               var token=randomString(32);
-              request.get([anchor.url||'http://localhost:3080','sign',pubKey.address,token].join('/'), function(err, res, body){
-                if(err) throw err;
+              var req=request.get([anchor.url||'https://localhost:3443','sign',pubKey.address,token].join('/'), function(err,res,body) {
                 var reply=JSON.parse(body);
-                var key=jsrsasign.KEYUTIL.getKey(pubkey.pkcs8,null,'pkcs8pub');
+                var key=jsrsasign.KEYUTIL.getKey(pubKey.pkcs8,null,'pkcs8pub');
                 verify({
                   algorithm: 'SHA256withECDSA',
                   key: key,
-                  data: token,
-                  sigString: reply.signature
+                  data: token.toString('utf8'),
+                  sigString: reply.signature.toString('utf8')
                 })
                 .then(function(success){
-                  anchor.urlCertificate=res.req.getPeerCertificate();
+                  console.log('can sign: ', success.toString())
                   anchor.urlCanSign=success;
                   q.resolve();
                 })
                 .catch(q.reject);
               });
+              req.on('err', q.reject);
+              req.on('response',function(res){
+                if (res.req && res.req.connection && res.req.connection.getPeerCertificate) {
+                  // only possible with node
+                  anchor.urlCertificate=res.req.connection.getPeerCertificate();
+                  console.log(anchor.urlCertificate);
+                }
+              })
             });
             return q.promise;
           }

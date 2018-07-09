@@ -41,7 +41,9 @@ router.get('/', function(req,res,next){
     })
     .then(function(signature){
       console.log(signature);
-      res.status(200).end(signature);
+      res.status(200).end(JSON.stringify({
+          signature: signature
+      }));
     })
     .catch(function(err){
       console.log(err);
