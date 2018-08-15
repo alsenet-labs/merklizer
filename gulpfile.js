@@ -71,7 +71,7 @@ gulp.task('build', function (callback) {
 gulp.task('update-ghpages', ['html'], function(callback){
   var err;
   try {
-    fs.writeFileSync('html/redirect.js', "echo document.location.assign('html/"+tagName+"/index.html#!/validate-file');\n");
+    fs.writeFileSync('html/redirect.js', "document.location.assign('html/"+tagName+"/index.html#!/validate-file');\n");
   } catch(e) {
     err=e;
   }
