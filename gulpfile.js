@@ -30,6 +30,11 @@ var tagName;
 var fs=require('fs');
 
 gulp.task('getLatestTagName', function (callback) {
+  if (process.env.MERKLIZER_TAGNAME) {
+    tagName=process.env.MERKLIZER_TAGNAME;
+    callback();
+    return;
+  }
   exec('git describe --tags --abbrev=0', function (err, stdout, stderr) {
     log(stdout);
     tagName=stdout.replace(/\n.*/,'');
