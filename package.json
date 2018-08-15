@@ -1,0 +1,24 @@
+{
+  "name": "merklizer",
+  "version": "1.0.1-beta",
+  "description": "Web app for computing Merkle trees and anchoring hashes to the open public blockchains",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alsenet-labs/merklizer.git"
+  },
+  "author": "",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/alsenet-labs/merklizer/issues"
+  },
+  "homepage": "https://github.com/alsenet-labs/merklizer#readme",
+  "devDependencies": {
+    "browser-sync": "^2.24.6",
+    "gulp": "^3.9.1",
+    "merge-stream": "^1.0.1"
+  }
+}

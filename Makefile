@@ -1,8 +1,11 @@
-# @Last modified time: 2018-04-04T12:02:57+07:00
+# @Last modified time: 2018-08-15T13:25:35+07:00
 
 .PHONY: webapp cordova run run-webapp run-cordova run-cordova-android
 
 all: webapp cordova
+
+gh-pages: webapp-ugly
+	yarn && gulp update-ghpages
 
 ugly: webapp-ugly cordova
 

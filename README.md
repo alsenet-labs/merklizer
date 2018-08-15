@@ -26,7 +26,9 @@ __Under active development, don't use it for production yet.__
 
 ## ONLINE DEMO
 
-  You can check the online demo here: [https://alsenet-labs.github.io/merklizer](https://alsenet-labs.github.io/merklizer)
+  You can check the latest online demo here: [https://alsenet-labs.github.io/merklizer](https://alsenet-labs.github.io/merklizer)
+
+  Replace the release id in the url to access older versions.
 
 # README
 
