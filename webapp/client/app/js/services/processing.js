@@ -118,8 +118,9 @@ module.exports = [
               showProgress: false,
               showButton: true
             });
-            // check default account again
-            return ethService.init()
+
+            return ethService.getWeb3Network()
+            .then(ethService.init)
             .then(function(){
               if (!ethService.account) {
                  throw new Error('You must login with MetaMask first !');
@@ -613,7 +614,6 @@ module.exports = [
           });
 
           return q.then(function() {
-            // check default account again
             return ethService.init(anchor.networkId);
 
           })

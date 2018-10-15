@@ -36,6 +36,8 @@ module.exports=[
 
       enabled: config.enabled,
 
+      _eth: {},
+
       getTransactionURL: config.getTransactionURL,
       getAddressURL: config.getAddressURL,
 
@@ -55,6 +57,19 @@ module.exports=[
         42: 'kovan'
       },
 
+      getWeb3Network: function() {
+        var q=Q.defer();
+        if (web3) {
+          web3.version.getNetwork(function(err,netId) {
+            if (err) q.reject(err);
+            else q.resolve(service.network_name[netId]||netId);
+          });
+        } else {
+          q.resolve();
+        }
+        return q.promise;
+      },
+
       init: function(network){
         var provider;
 
@@ -63,19 +78,23 @@ module.exports=[
         }
         network=service.network_name[network]||network;
 
-        if (!service.eth) {
-          if (config.provider)
-            provider=new Eth.HttpProvider(config.provider);
-          else if (typeof web3 !== 'undefined')
-            provider=web3.currentProvider;
-          else
-            provider=new Eth.HttpProvider('http://localhost:8545');
+        return service.getWeb3Network()
+        .then(function(web3Network){
+          if (!service._eth[network]) {
+            // give priority to Metamask over configuration file
+            if (config.provider[network] && web3Network!=network)
+              provider=new Eth.HttpProvider(config.provider[network]);
+            else if (web3Network==network)
+              provider=web3.currentProvider;
+            else
+              provider=new Eth.HttpProvider('http://localhost:8545');
 
-          service.eth=new Eth(provider);
-        }
-        eth=service.eth;
+            service._eth[network]=new Eth(provider);
+          }
+          eth=service.eth=service._eth[network];
 
-        return Q.fcall(function(){
+        })
+        .then(function(){
           var q=Q.defer();
           eth.accounts()
           .then(function(accounts){
@@ -87,7 +106,7 @@ module.exports=[
               q.reject(err);
             } else {
               console.log('Local service not found, falling back to public provider');
-              eth=service.eth=new Eth(new Eth.HttpProvider(config.publicProvider[network]));
+              eth=service.eth=service._eth[network]=new Eth(new Eth.HttpProvider(config.publicProvider[network]));
               q.resolve();
             }
           });

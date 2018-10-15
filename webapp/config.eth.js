@@ -24,7 +24,10 @@
 module.exports=(function(){
   return {
     enabled: true,
-    network: 'kovan',
+    network: 'mainnet',
+    provider: {
+//    mainnet: 'http://localhost:8545'
+    },
     publicProvider: {
       mainnet: 'https://mainnet.infura.io',
       kovan: 'https://kovan.infura.io'

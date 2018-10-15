@@ -55,7 +55,7 @@ module.exports=[
 
       init: function(){
         if (!$scope.$stateParams.files || !$scope.$stateParams.files.length) {
-          $scope.$state.go('validate');
+          $scope.$state.go('validateFile');
           return;
         }
         angular.forEach($scope.$stateParams.files,function(file){
