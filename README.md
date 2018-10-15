@@ -90,7 +90,18 @@ Run on Android with cordova:
 make run-cordova-android
 ```
 
-Note: gh-pages branch is made of content of webapp/dist/
+Rebuild the gh-pages demo with:
+```
+export TAG=<tag>
+cd webapp
+gulp build
+MERKLIZER_VERSION=$TAG gulp update-ghpages
+git add html
+git commit html -m "update gh-pages"
+git tag $TAG
+git push origin $TAG
+
+```
 
 ## Android Application Privacy Policy
 * The Android application use your camera to scan QRCodes.
