@@ -93,11 +93,11 @@ make run-cordova-android
 Rebuild the gh-pages demo with:
 ```
 export TAG=<tag>
-cd webapp
 gulp build
-MERKLIZER_VERSION=$TAG gulp update-ghpages
+MERKLIZER_TAGNAME=$TAG gulp update-ghpages
 git add html
 git commit html -m "update gh-pages"
+git push origin master
 git tag $TAG
 git push origin $TAG
 
