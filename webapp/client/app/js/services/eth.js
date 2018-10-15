@@ -59,7 +59,7 @@ module.exports=[
 
       getWeb3Network: function() {
         var q=Q.defer();
-        if (web3) {
+        if (typeof web3 != 'undefined') {
           web3.version.getNetwork(function(err,netId) {
             if (err) q.reject(err);
             else q.resolve(service.network_name[netId]||netId);
