@@ -62,7 +62,12 @@ module.exports = [
         if (!merkle._hash[hashType||merkle.hashType]) {
           throw new Error('Hash type '+(hashType||merkle.hashType)+' not supported');
         }
-        return merkle._hash[hashType||merkle.hashType](data);
+        try {
+          return merkle._hash[hashType||merkle.hashType](data);
+        } catch(e) {
+          console.log(e);
+          return $q.reject(e);
+        }
       },
 
       hashToString: function hashToString(hash){
