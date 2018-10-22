@@ -96,11 +96,16 @@ module.exports = [
       },
 
       compute: function compute(objectList){
-        return merkle.computeTree(objectList)
-        .then(function(tree){
-          merkle.computeProofs(tree);
-          return tree;
-        });
+        try {
+          return merkle.computeTree(objectList)
+          .then(function(tree){
+            merkle.computeProofs(tree);
+            return tree;
+          });
+        } catch(e){
+          console.log(e);
+          return $q.reject(e);
+        }
       },
 
       computeTree: function computeTree(objectList){
