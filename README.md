@@ -92,6 +92,7 @@ make run-cordova-android
 
 Rebuild the gh-pages demo with:
 ```
+git stash save # don't include anything not yet commited
 export TAG=<tag>
 gulp build
 MERKLIZER_TAGNAME=$TAG gulp update-ghpages
@@ -100,6 +101,7 @@ git commit html -m "update gh-pages"
 git push origin master
 git tag $TAG
 git push origin $TAG
+git stash pop # restore un-commited changes
 
 ```
 
