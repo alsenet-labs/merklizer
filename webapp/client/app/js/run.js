@@ -27,16 +27,20 @@ module.exports=[
   '$state',
   '$stateParams',
   '$window',
+  '$transitions',
 
   function (
     $rootScope,
     $state,
     $stateParams,
-    $window
+    $window,
+    $transitions
   ) {
     $rootScope.$state=$state;
     $rootScope.$stateParams=$stateParams;
     $rootScope.mobileApp=['http:','https:'].indexOf($window.document.location.protocol)<0;
-
+    $transitions.onSuccess({}, function(transition) {
+      $rootScope.title = transition.to().title;
+    });
   }
 ];

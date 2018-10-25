@@ -46,14 +46,15 @@ module.exports=[
     $stateProvider
     .state('chooser', {
       url: '/',
-      templateUrl: 'views/chooser.html'
+      templateUrl: 'views/chooser.html',
+      title: 'Menu'
     })
     .state('anchor', {
       url: '/anchor',
       templateUrl: 'views/files.html',
       controller: 'FilesCtrl',
       controllerAs: 'files',
-      title: 'Anchor'
+      title: 'Anchoring'
     })
     .state('processed', {
       url: '/processed',
@@ -75,14 +76,14 @@ module.exports=[
       templateUrl: 'views/files.html',
       controller: 'FilesCtrl',
       controllerAs: 'files',
-      title: 'Validate File'
+      title: 'Validating'
     })
     .state('validateQRCode', {
       url: '/validate-qrcode',
       templateUrl: 'views/qrcode.html',
       controller: 'QRCodeCtrl',
       controllerAs: 'qrcode',
-      title: 'Validate QRCode'
+      title: 'Scan QRCode'
     })
     .state('report', {
       url: '/report',
