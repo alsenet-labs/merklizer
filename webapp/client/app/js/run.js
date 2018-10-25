@@ -36,11 +36,34 @@ module.exports=[
     $window,
     $transitions
   ) {
+    $window.addEventListener('message',receiveMessage,false);
+    function receiveMessage(msg){
+      if (msg.origin!=document.location.origin) {
+        console.log(msg);
+        return;
+      }
+      if (msg.data && msg.data.type) {
+        console.log(msg.data.type);
+        switch(msg.data.type){
+          case 'transition':
+            $state.transitionTo(msg.data.toState);
+            break;
+          default:
+            console.log('unhandled message', msg);
+            break;
+        }
+      } else {
+        console.log('unhandled message', msg);
+      }
+    }
     $rootScope.$state=$state;
     $rootScope.$stateParams=$stateParams;
     $rootScope.mobileApp=['http:','https:'].indexOf($window.document.location.protocol)<0;
     $transitions.onSuccess({}, function(transition) {
       $rootScope.title = transition.to().title;
+      if ($window.parent) {
+        $window.parent.postMessage({type: 'transitionSuccess', toState: transition.to().name});
+      }
     });
   }
 ];
