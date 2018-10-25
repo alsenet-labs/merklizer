@@ -93,6 +93,11 @@ module.exports=[
         });
 
         $scope.$on('filesReady',function(event,files){
+          if ($window.parent) {
+            $window.parent.postMessage({
+              type: 'filesReady'
+            });
+          }
           if ($scope.$state.current.name=='validateFile') {
             $scope.filesReady(files);
           }
