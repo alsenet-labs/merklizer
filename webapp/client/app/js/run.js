@@ -36,6 +36,19 @@ module.exports=[
     $window,
     $transitions
   ) {
+
+    $rootScope.$on('showOverlay',function(event,options){
+      if ($window.parent) {
+        $window.parent.postMessage({type: 'showOverlay', options: options});
+      }
+    });
+
+    $rootScope.$on('hideOverlay',function(event,options){
+      if ($window.parent) {
+        $window.parent.postMessage({type: 'hideOverlay', options: options});
+      }
+    });
+
     $window.addEventListener('message',receiveMessage,false);
     function receiveMessage(msg){
       if (msg.origin!=document.location.origin) {
@@ -46,7 +59,7 @@ module.exports=[
         console.log(msg.data.type);
         switch(msg.data.type){
           case 'transition':
-            $state.transitionTo(msg.data.toState);
+            $state.transitionTo(msg.data.toState, msg.data.stateParams||{}, {reload: msg.data.reload});
             break;
           default:
             console.log('unhandled message', msg);
@@ -63,6 +76,11 @@ module.exports=[
       $rootScope.title = transition.to().title;
       if ($window.parent) {
         $window.parent.postMessage({type: 'transitionSuccess', toState: transition.to().name});
+      }
+    });
+    $transitions.onStart({}, function(transition) {
+      if ($window.parent) {
+        $window.parent.postMessage({type: 'transitionStart', toState: transition.to().name});
       }
     });
   }

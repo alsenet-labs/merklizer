@@ -47,7 +47,9 @@ module.exports=[
     .state('chooser', {
       url: '/',
       templateUrl: 'views/chooser.html',
-      title: 'Menu'
+      title: 'Menu',
+      controller: 'ChooserCtrl',
+      controllerAs: 'chooser'
     })
     .state('anchor', {
       url: '/anchor',
