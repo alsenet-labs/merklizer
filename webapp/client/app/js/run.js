@@ -39,19 +39,19 @@ module.exports=[
 
     $rootScope.$on('showOverlay',function(event,options){
       if ($window.parent) {
-        $window.parent.postMessage({type: 'showOverlay', options: options}, $window.location.origin);
+        $window.parent.postMessage({type: 'showOverlay', options: options}, $window.document.location.origin);
       }
     });
 
     $rootScope.$on('hideOverlay',function(event,options){
       if ($window.parent) {
-        $window.parent.postMessage({type: 'hideOverlay', options: options}, $window.location.origin);
+        $window.parent.postMessage({type: 'hideOverlay', options: options}, $window.document.location.origin);
       }
     });
 
     $window.addEventListener('message',receiveMessage,false);
     function receiveMessage(msg){
-      if (msg.origin!=$window.location.origin) {
+      if (msg.origin!=$window.document.location.origin) {
         console.log(msg);
         return;
       }
@@ -71,16 +71,16 @@ module.exports=[
     }
     $rootScope.$state=$state;
     $rootScope.$stateParams=$stateParams;
-    $rootScope.mobileApp=['http:','https:'].indexOf($window.location.protocol)<0;
+    $rootScope.mobileApp=['http:','https:'].indexOf($window.document.location.protocol)<0;
     $transitions.onSuccess({}, function(transition) {
       $rootScope.title = transition.to().title;
       if ($window.parent) {
-        $window.parent.postMessage({type: 'transitionSuccess', toState: transition.to().name}, $window.location.origin);
+        $window.parent.postMessage({type: 'transitionSuccess', toState: transition.to().name}, $window.document.location.origin);
       }
     });
     $transitions.onStart({}, function(transition) {
       if ($window.parent) {
-        $window.parent.postMessage({type: 'transitionStart', toState: transition.to().name}, $window.location.origin);
+        $window.parent.postMessage({type: 'transitionStart', toState: transition.to().name}, $window.document.location.origin);
       }
     });
   }
