@@ -75,7 +75,7 @@ make
 ```
 Rebuild with:
 ```
-make # use "build ugly" instead to minimize javascript (slow)
+make # use "make ugly" instead to minimize javascript (slow)
 ```
 Run in the browser without cordova:
 ```
