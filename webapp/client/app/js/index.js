@@ -26,7 +26,6 @@
 if (window.location.protocol!='https:') {
   var href=window.location.href.replace(/[^:]+/,'https');
   window.location.assign(href);
-  return;
 }
 
 var angular=require('angular');
