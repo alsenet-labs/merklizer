@@ -174,6 +174,11 @@ module.exports=[
               }
           });
         })
+        .catch(function(err){
+          console.log(err);
+          $window.alert('An unexpected error occured !');
+          $window.document.location.reload();
+        })
         .finally($scope.hideOverlay);
 
       }, // onFilesDropped
