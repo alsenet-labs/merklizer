@@ -97,7 +97,7 @@ module.exports=[
 
       removeDuplicates: function(){
         var fileList=$scope.queue;
-        var hashType=fileList[0].hashType;
+        var hashType=fileList && fileList.length && fileList[0].hashType;
         var hasDuplicate=0;
         var removedDuplicate=0;
         angular.forEach(fileList,function(file, i){
