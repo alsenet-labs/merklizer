@@ -340,7 +340,7 @@ module.exports = [
           hashType: proof.hashType,
           root: merkle.hashToString(proof.root),
           hash: merkle.hashToString(proof.hash),
-          htext: dec.decode(proof.htext),
+          htext: ((proof.htext && proof.htext.length)?dec.decode(proof.htext):undefined),
           operations: (function(){
             var result=[];
             proof.operations.forEach(function(op){
@@ -406,12 +406,14 @@ module.exports = [
           function addFileToArchive(file) {
             var json=JSON.stringify(service.getReadableProof(file.proof,testing),false,2);
             folder.file(file.name+'.json',json);
-            try {
-              folder.file(file.name+'.svg',new QRCode(json).svg());
-            } catch(e) {
-              console.log(e);
-              if (testing) {
-                throw new Error('Could not create QRCode for '+file.name+'. ('+e.message+')');
+            if ($rootScope.config.generate_qrcode) {
+              try {
+                folder.file(file.name+'.svg',new QRCode(json).svg());
+              } catch(e) {
+                console.log(e);
+                if (testing) {
+                  throw new Error('Could not create QRCode for '+file.name+'. ('+e.message+')');
+                }
               }
             }
           }
@@ -423,37 +425,42 @@ module.exports = [
             }
             var file=queue[i];
             file.proof.anchors=queue.anchors;
-            var nextFile=queue[i+1];
 
-            // When the next file has the same name plus a '.txt' extension,
-            // include its content in proof.htext (it's hash will match the first
-            // hash in the proof, ie proof.operations[0].right)
-            if (file.ishtext) {
-              // then skip such text file
-              loop(i+1);
-              return;
+            if ($rootScope.config.include_associated_text_files_in_proof) {
+              var nextFile=queue[i+1];
 
-            } else if (nextFile && nextFile.name==file.name+'.txt' && !file.proof.htext) {
-              if (i&1) {
-                throw new Error('Files to be paired with a text file must have an even index. '+file.name+' will not be paired with '+file.name+'.txt');
-              }
-              nextFile.ishtext=true;
-              $q.resolve().then(function(){
-                return fileService.read(nextFile,'readAsArrayBuffer');
-              })
-              .then(function(result){
-                file.proof.htext=result;
-              })
-              .then(function(){
-                addFileToArchive(file);
+              // When the next file has the same name plus a '.txt' extension,
+              // include its content in proof.htext (it's hash will match the first
+              // hash in the proof, ie proof.operations[0].right)
+              if (file.ishtext) {
+                // then skip such text file
                 loop(i+1);
-              })
-              .catch(q.reject);
-              return;
+                return;
 
-            } else if (file.name.match(/\.txt$/i) && !file.proof.htext) {
+              } else if (nextFile && nextFile.name==file.name+'.txt' && !file.proof.htext) {
+                if (i&1) {
+                  throw new Error('Files to be paired with a text file must have an even index. '+file.name+' will not be paired with '+file.name+'.txt');
+                }
+                nextFile.ishtext=true;
+                $q.resolve().then(function(){
+                  return fileService.read(nextFile,'readAsArrayBuffer');
+                })
+                .then(function(result){
+                  file.proof.htext=result;
+                })
+                .then(function(){
+                  addFileToArchive(file);
+                  loop(i+1);
+                })
+                .catch(q.reject);
+                return;
+              }
+
+            }
+
+            if ($rootScope.config.include_standalone_text_files_in_proof && file.name.match(/\.txt$/i) && !file.proof.htext) {
               // When the file is a "standalone" text file, include
-              // its content in file.proof.htext
+              // its content in file.proof.htext, if possible
               $q.resolve().then(function(){
                 return fileService.read(file,'readAsArrayBuffer');
               })
@@ -464,12 +471,12 @@ module.exports = [
               })
               .catch(q.reject);
               return;
-
-            } else {
-              addFileToArchive(file);
-              loop(i+1);
-              return;
             }
+
+            // By default simply add the file to archive
+            addFileToArchive(file);
+            loop(i+1);
+            return;
 
           })(0);
 
@@ -531,7 +538,16 @@ module.exports = [
       },
 
       encodeAndHash: function(proof,propertyName){
-        if (proof[propertyName] && !proof[propertyName+'_hash']) {
+        if (proof[propertyName]) {
+          if (proof[propertyName+'_hash']) {
+            return merkle.hash(proof[propertyName],proof.hashType)
+            .then(function(hash){
+              if (merkle.hashToString(proof[propertyName+'_hash'])!=merkle.hashToString(hash)) {
+                // it is ok to have _hash being already defined (meaning that property is already encoded), unless hash mismatch
+                throw new Error('htext hash mismatch !');
+              }
+            });
+          }
           var enc=new TextEncoder();
           proof[propertyName]=enc.encode(proof[propertyName]);
           return merkle.hash(proof[propertyName],proof.hashType)
