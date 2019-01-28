@@ -37,6 +37,12 @@ module.exports=[
     $transitions
   ) {
 
+    $rootScope.config={
+      include_associated_text_files_in_proof: false,
+      include_standalone_text_files_in_proof: false,
+      generate_qrcode: false
+    }
+
     $rootScope.$on('showOverlay',function(event,options){
       if ($window.parent) {
         $window.parent.postMessage({type: 'showOverlay', options: options}, $window.document.location.origin);
