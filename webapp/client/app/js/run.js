@@ -37,11 +37,7 @@ module.exports=[
     $transitions
   ) {
 
-    $rootScope.config={
-      include_associated_text_files_in_proof: false,
-      include_standalone_text_files_in_proof: false,
-      generate_qrcode: false
-    }
+    $rootScope.config=require('../../../config.json');
 
     $rootScope.$on('showOverlay',function(event,options){
       if ($window.parent) {
