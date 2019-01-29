@@ -17,7 +17,7 @@
           <div ng-class="{anchor: $state.current=='anchor'}" type="button" class="btn btn-s btn-danger" ng-click="removeAll()">
             <span class="fa fa-recycle"></span> Clear List
           </div>
-          <div ng-class="{anchor: $state.current=='anchor'}" ng-if="$state.current.name=='anchor'" type="button" class="btn btn-s btn-primary" ng-click="process()">
+          <div ng-class="{anchor: $state.current=='anchor'}" type="button" class="btn btn-s btn-primary" ng-click="process()">
             <span class="fa fa-link"></span> Process {{queue.length}} file{{ queue.length > 1 ? 's' : '' }}
           </div>
         </div>
@@ -32,7 +32,7 @@
             <th>Hash</th>
           </tr>
         </thead>
-        <tr ng-repeat="file in queue" ng-class="{duplicate: file.duplicate}">
+        <tr ng-repeat="file in queue" ng-class="{duplicate: file.duplicate, 'has-proof': file.proof}">
           <td class="filename" >{{file.name}}</td>
           <td class="hash">{{file.hash_str}}</td>
         </tr>

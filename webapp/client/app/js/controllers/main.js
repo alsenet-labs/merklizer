@@ -104,11 +104,10 @@ module.exports=[
         });
 
         $scope.$on('filesValidated',function(event,files){
-          if (files.find(function(file){
-            return (file.proof && file.proof.validated!=undefined);
-          })) {
-            $scope.$state.go('report',{files: files});
-          }
+          $scope.$state.go('report',{
+            files: files,
+            proofs: $scope.proofs
+          });
         });
 
         $scope.$on('showAnchors',function(event,file){
@@ -222,10 +221,7 @@ module.exports=[
 
           })(0);
 
-          q.promise.then(function(){
-            processing.validateAll(queue);
-          })
-          .catch(function(err){
+          q.promise.catch(function(err){
             console.log(err);
             $window.alert(err.message);
           });

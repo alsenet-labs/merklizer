@@ -92,7 +92,8 @@ module.exports=[
       controllerAs: 'report',
       tile: 'Report',
       params: {
-        files: null
+        files: null,
+        proofs: null
       }
     });
 

@@ -83,6 +83,14 @@ module.exports = [
           showProgress: true
         });
 
+        switch($rootScope.$state.current.name) {
+          case 'anchor':  service.anchorFiles(queue); break;
+          case 'validateFile': service.validateAll(queue); break;
+          default: throw new Error('unhandled state'); break;
+        }
+      },
+
+      anchorFiles: function anchorFiles(queue) {
         function pushAnchor(anchor){
           queue.anchors=queue.anchors||[];
           queue.anchors.push(anchor);

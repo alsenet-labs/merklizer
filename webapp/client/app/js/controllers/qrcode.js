@@ -96,7 +96,7 @@ module.exports=[
         })
         .then(function(validated){
           if (validated) {
-            $scope.$state.go('report',{files: [{proof: proof}]});
+            $scope.$state.go('report',{files: [{proof: proof}], proofs: [proof]});
           } else {
             $scope.$state.go('validate');
           }

@@ -1,9 +1,12 @@
 <div ng-cloak class="report-wrapper">
   <div class="report">
-    <div class="file" ng-repeat="file in $stateParams.files">
+    <div class="file" ng-repeat="file in sortedFiles">
       <div class="details" ng-if="file.proof && !file.proof.validated">
         <p ng-if="file.hash" class="status">The file "{{::file.name}}" could not be validated.</p>
         <p ng-if="!file.hash" class="status">The QR proof could not be validated.</p>
+      </div>
+      <div class="details" ng-if="!file.proof">
+        <p ng-if="file.hash" class="status">The file "{{::file.name}}" could not be validated because it had no associated proof.</p>
       </div>
       <div class="details" ng-if="file.proof && file.proof.validated">
         <p ng-if="file.hash" class="status">The file "{{::file.name}}" looks genuine.</p>
@@ -48,6 +51,11 @@
             </ul>
           </li>
         </ul>
+      </div>
+    </div>
+    <div class="file" ng-repeat="file in unusedProofs">
+      <div class="details">
+        <p class="status">The proof "{{::file.name}}" had no associated file.</p>
       </div>
     </div>
   </div>

@@ -53,20 +53,43 @@ module.exports=[
 
     angular.extend($scope,{
 
+      showOverlay: function(options){
+        $rootScope.$broadcast('showOverlay',options);
+      },
+
+      hideOverlay: function(){
+        $rootScope.$broadcast('hideOverlay');
+      },
+
       init: function(){
         if (!$scope.$stateParams.files || !$scope.$stateParams.files.length) {
           $scope.$state.go('validateFile');
           return;
         }
+        var validated=$scope.validated=[];
+        var notValidated=$scope.notValidated=[];
+        var noProof=$scope.noProof=[];
+        var proofs=$scope.unusedProofs=$scope.$stateParams.proofs;
+        $scope.showOverlay('Sorting results...');
         angular.forEach($scope.$stateParams.files,function(file){
           if (file.proof) {
+            var p=proofs.indexOf(file.proof);
+            if (p>=0) proofs.splice(p,1);
             file.proof.root=merkle.hashToString(file.proof.root);
             if (file.proof.htext) {
               var dec=new TextDecoder();
               file.proof.htext_str=dec.decode(file.proof.htext);
             }
+
+            if (file.proof.validated) validated.push(file);
+            else notValidated.push(file);
+
+          } else {
+            noProof.push(file);
           }
         });
+        $scope.hideOverlay();
+        $scope.sortedFiles=notValidated.concat(noProof).concat(validated);
       }
     });
 
