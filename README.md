@@ -4,7 +4,7 @@ Web app for computing Merkle trees and anchoring hashes to the open public block
 __Under active development, don't use it for production yet.__
 
 ## Copyright
- Copyright (c) 2018 ALSENET SA
+ Copyright (c) 2018-2019 ALSENET SA
 
 ## Authors
   * Alexandre Poltorak <polto@alsenet.com>
@@ -44,14 +44,7 @@ On the Bitcoin blockchain using a public service (eg: https://blockexplorer.com)
 
 After the blockchain transaction appears on the blockchain(s), it allows
 you to download a zip archive containing all the Merkle proofs and the
-anchoring details, one json per file and one QRCode per json.
-
-When the file to be anchored is a text file, its content is added to the json.
-
-When for each file there is a .txt file associated, the text file content is
-added to the first file's json. Thus a description can be displayed when
-validating the file with the json (or the QRCode alone), and its hash is part
-of the proof.
+anchoring details, one json per file, and optionally one QRCode per json.
 
 Files are NOT transmitted to the server, everything occurs client-side.
 
@@ -61,6 +54,20 @@ In the future you will be able to enter your public key and to obtain raw
 transactions. Then you will be able to sign and send the transactions using
 your preferred wallet(s), and to enter the resulting transaction id(s) in order
 to complete the process and prepare the proofs.
+
+## Optional features that can be enabled in webapp/config.json:
+
+**config.generate_qrcode**:
+Generate a QRCode for every proof json.
+
+**config.include_associated_text_files_in_proof**:
+When for each file there is a .txt file associated, the text file content is
+added to the first file's json. Thus a description can be displayed when
+validating the file with the json (or the QRCode alone), and its hash is part
+of the proof. No separate json proof is generated for the text file.
+
+**config.include_standalone_text_files_in_proof**:
+When the file to be anchored is a text file, its content is added to the json.
 
 ## Quickstart
 Before all you must have the latest Android SDK (ideally installed via
