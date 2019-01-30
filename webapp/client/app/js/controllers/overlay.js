@@ -72,6 +72,7 @@ module.exports=[
         $scope.showProgress=options.showProgress||(options.showProgress!==false && $scope.showProgress);
         $scope.hideDialog=(options.hideDialog==true);
         $scope.showButton=(options.showButton!=false);
+        $scope.buttons=options.buttons;
         if ($scope.showButton) {
           $scope.onclick=options.onclick||$scope._onclick;
           $scope.buttonText=options.buttonText||'Abort';

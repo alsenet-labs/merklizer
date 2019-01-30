@@ -6,6 +6,9 @@
           <div>{{message}}</div>
           <div><progress ng-if="showProgress" max="{{progress.max}} value="{{progress.value}}"></progress></div>
           <div ng-if="showButton" ng-click="onclick()" class="btn btn-danger">{{buttonText}}</div>
+          <div ng-if="buttons" ng-repeat="button in buttons">
+            <div ng-click="button.onclick($event)" id="{{button.id}}" ng-class="button.class">{{button.text}}</div>
+          </div>
         </div>
       </div>
     </div>

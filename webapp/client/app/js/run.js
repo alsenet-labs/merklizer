@@ -41,13 +41,13 @@ module.exports=[
 
     $rootScope.$on('showOverlay',function(event,options){
       if ($window.parent) {
-        $window.parent.postMessage({type: 'showOverlay', options: options}, $window.document.location.origin);
+        $window.parent.postMessage({type: 'showOverlay', options: JSON.stringify(options)}, $window.document.location.origin);
       }
     });
 
     $rootScope.$on('hideOverlay',function(event,options){
       if ($window.parent) {
-        $window.parent.postMessage({type: 'hideOverlay', options: options}, $window.document.location.origin);
+        $window.parent.postMessage({type: 'hideOverlay', options: JSON.stringify(options)}, $window.document.location.origin);
       }
     });
 
