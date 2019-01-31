@@ -76,6 +76,8 @@ module.exports=[
     $rootScope.mobileApp=['http:','https:'].indexOf($window.document.location.protocol)<0;
     $transitions.onSuccess({}, function(transition) {
       $rootScope.title = transition.to().title;
+      // allow state related css rules
+      $('body').removeClass('_'+transition.from().name.replace(/\./g,'_').replace(/([A-Z])/g,function(all,letter){return '-'+letter.toLowerCase()})).addClass('_'+transition.to().name.replace(/\./g,'_').replace(/([A-Z])/g,function(all,letter){return '-'+letter.toLowerCase()}));
       if ($window.parent) {
         $window.parent.postMessage({type: 'transitionSuccess', toState: transition.to().name}, $window.document.location.origin);
       }

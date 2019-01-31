@@ -1,5 +1,14 @@
 // @Last modified time: 2018-04-21T01:41:43+07:00
 
+._validate-file #merkle-files {
+  tr td:first-child {
+    color: red;
+  }
+  tr.has-proof td:first-child {
+    color: black;
+  }
+}
+
 #merkle-files {
   overflow: hidden;
 
@@ -269,10 +278,6 @@
 
   tr.duplicate td:first-child {
     text-decoration: line-through;
-  }
-
-  tr.has-proof td:first-child {
-    color: blue;
   }
 
   label {

@@ -139,6 +139,10 @@ module.exports=[
         return ext=='json' && $scope.$state.current.name=='validateFile'; // todo exclude only if it's a proof
       },
 
+      /**
+       sort files by name then compute hashes and remove duplicates
+       then broadcast "fileReady" event on success.
+      */
       onFilesDropped: function($files, $event) {
         $scope.progress.max=$files.length-1;
         $scope.progress.value=0;

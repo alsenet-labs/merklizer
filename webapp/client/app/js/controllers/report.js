@@ -69,12 +69,12 @@ module.exports=[
         var validated=$scope.validated=[];
         var notValidated=$scope.notValidated=[];
         var noProof=$scope.noProof=[];
-        var proofs=$scope.unusedProofs=$scope.$stateParams.proofs;
+        var unusedProofs=$scope.unusedProofs=[];
+        var proofs=$scope.$stateParams.proofs;
+        var files=$scope.$stateParams.files;
         $scope.showOverlay('Sorting results...');
-        angular.forEach($scope.$stateParams.files,function(file){
+        angular.forEach(files,function(file){
           if (file.proof) {
-            var p=proofs.indexOf(file.proof);
-            if (p>=0) proofs.splice(p,1);
             file.proof.root=merkle.hashToString(file.proof.root);
             if (file.proof.htext) {
               var dec=new TextDecoder();
@@ -88,6 +88,13 @@ module.exports=[
             noProof.push(file);
           }
         });
+        if (validated.length+notValidated.length < proofs.length){
+          $scope.unusedProofs=proofs.filter(function(proof){
+            return !files.some(function(file){
+              return file.proof && file.proof==proof.data
+            });
+          });
+        }
         $scope.hideOverlay();
         $scope.sortedFiles=notValidated.concat(noProof).concat(validated);
       }

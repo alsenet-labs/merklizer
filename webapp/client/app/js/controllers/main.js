@@ -92,6 +92,7 @@ module.exports=[
           }
         });
 
+        // files have been added
         $scope.$on('filesReady',function(event,files){
           if ($window.parent) {
             $window.parent.postMessage({
@@ -99,7 +100,26 @@ module.exports=[
             }, $window.document.location.origin);
           }
           if ($scope.$state.current.name=='validateFile') {
-            $scope.filesReady(files);
+            // associate proofs with files using hash comparison
+            $scope.associateProofsWithFiles($scope.proofs,files,function(proof,file){
+              return (file.hash_str[proof.data.hashType]==proof.data.hash)
+            })
+            .then(function(proofsPairedCount){
+              if (proofsPairedCount && proofsPairedCount<$scope.proofs.length) {
+                // try to associate remaining proofs with files using filename comparison
+                return $scope.associateProofsWithFiles($scope.proofs,files,function(proof,file){
+                  return (file.name==proof.name.replace(/\.[^\.]+$/));
+                });
+              } else {
+                return proofsPairedCount;
+              }
+            })
+            .then(function(proofsPairedCount){
+              // validate files automatically when all files have an associated proof
+              if (proofsPairedCount && proofsPairedCount==files.length) {
+                $rootScope.$broadcast('processFiles',files);
+              }
+            })
           }
         });
 
@@ -166,9 +186,17 @@ module.exports=[
 
       }, // validate
 
-      filesReady: function(queue) {
-        // associate proof with file
-        $scope.readProofs($scope.proofs)
+      /**
+      @desc associate proofs with files
+
+      @param proofs json file array
+      @param queue data file array
+      @param compare(proof,file) function
+      @return matches, integer as a promise
+      */
+      associateProofsWithFiles: function(proofs,queue,compare) {
+        var proofsPairedCount=0;
+        return $scope.readProofs(proofs)
         .then(function(proofs){
           var q=$q.defer();
           (function proofloop(p){
@@ -185,6 +213,9 @@ module.exports=[
                 return;
               }
               if (file.proof) {
+                if (file.proof==proof.data) {
+                  ++proofsPairedCount;
+                }
                 fileloop(f+1);
                 return;
               }
@@ -203,12 +234,20 @@ module.exports=[
                 });
               }
               qqq.then(function(){
-                if (file.hash_str[proof.data.hashType]==proof.data.hash) {
-                  file.proof=proof.data;
-                  qq.resolve();
-                } else {
-                  fileloop(f+1);
-                }
+                return $q.resolve(compare(proof,file))
+                .then(function(matching){
+                  if (matching) {
+                    if (proof.file) {
+                      throw new Error('Unexpected error: proof '+proof.name+' matches both '+proof.file.name+' and '+file.name);
+                    }
+                    file.proof=proof.data;
+                    proof.file=file;
+                    ++proofsPairedCount;
+                    qq.resolve();
+                  } else {
+                    fileloop(f+1);
+                  }
+                })
               })
               .catch(qq.reject);
 
@@ -221,7 +260,11 @@ module.exports=[
 
           })(0);
 
-          q.promise.catch(function(err){
+          return q.promise
+          .then(function(){
+            return proofsPairedCount;
+          })
+          .catch(function(err){
             console.log(err);
             $window.alert(err.message);
           });
