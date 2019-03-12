@@ -172,6 +172,7 @@ module.exports=[
         .then(function(){
           $rootScope.$broadcast('filesReady',$scope.queue);
           $('table.files').floatThead({
+              autoreflow: true,
               position: 'fixed',
               scrollContainer: function($table){
                   return $table.closest('.files-wrapper');
