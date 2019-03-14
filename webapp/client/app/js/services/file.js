@@ -22,12 +22,24 @@
 
 
 'use strict';
+var reduce=require('../modules/reduce.js');
 
 module.exports=[
   '$q',
   function($q){
     var service=this;
     angular.extend(service,{
+      filters: [],
+      filterFile: function(file){
+        var promise=Promise.resolve();
+        return reduce(service.filters,promise,function(promise,filter){
+          return filter(file)
+          .then(function(filtered){
+            promise.break=filtered;
+            return filtered;
+          });
+        });
+      },
       read: function(file,method) {
         var q=$q.defer();
         var reader;

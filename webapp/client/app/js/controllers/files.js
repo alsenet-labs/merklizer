@@ -126,19 +126,6 @@ module.exports=[
         }
       }, // removeDuplicates
 
-/*      excludeFileType: function(file){
-        var ext=file.name.split('.').pop();
-        return config.exclude.find(function(type){
-            return type.mime==file.type || (ext && type.ext==ext);
-        });
-      },
-  */
-
-      excludeFile: function(file){
-        var ext=file.name.split('.').pop().toLowerCase();
-        return ext=='json' && $scope.$state.current.name=='validateFile'; // todo exclude only if it's a proof
-      },
-
       /**
        sort files by name then compute hashes and remove duplicates
        then broadcast "fileReady" event on success.
@@ -151,32 +138,37 @@ module.exports=[
         $scope.queue.size=$scope.queue.size||0;
 
         // update total size and store file
-        angular.forEach($files,function(file,i) {
-          $scope.progress.value=i;
-          if (!$scope.excludeFile(file)) {
-            $scope.queue.size+=file.size;
-            $scope.queue.push(file);
-          } else {
-            $rootScope.$broadcast('excludedFile',file);
-          }
-        });
-        $scope.queue.sort(function(a,b){
-          a=a.name.toLowerCase();
-          b=b.name.toLowerCase();
-          if (a>b) return 1;
-          if (a<b) return -1;
-          return 0;
-        });
-        $scope.computeHashes($scope.queue)
-        .then($scope.removeDuplicates)
-        .then(function(){
-          $rootScope.$broadcast('filesReady',$scope.queue);
-          $('table.files').floatThead({
-              autoreflow: true,
-              position: 'fixed',
-              scrollContainer: function($table){
-                  return $table.closest('.files-wrapper');
+        Array.prototype.slice.call($files).reduce(function(promise,file){
+          return promise.then(function(){
+            return fileService.filterFile(file)
+            .then(function(filtered){
+              if (!filtered) {
+                $scope.queue.size+=file.size;
+                $scope.queue.push(file);
               }
+            });
+          });
+        }, Promise.resolve())
+        .then(function(){
+          $scope.queue.sort(function(a,b){
+            a=a.name.toLowerCase();
+            b=b.name.toLowerCase();
+            if (a>b) return 1;
+            if (a<b) return -1;
+            return 0;
+          });
+
+          return $scope.computeHashes($scope.queue)
+          .then($scope.removeDuplicates)
+          .then(function(){
+            $rootScope.$broadcast('filesReady',$scope.queue);
+            $('table.files').floatThead({
+                autoreflow: true,
+                position: 'fixed',
+                scrollContainer: function($table){
+                    return $table.closest('.files-wrapper');
+                }
+            });
           });
         })
         .catch(function(err){

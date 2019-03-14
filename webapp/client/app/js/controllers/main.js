@@ -85,11 +85,25 @@ module.exports=[
             $scope.showMetadata(file);
         });
 */
-        $scope.$on('excludedFile',function(event,file){
-          var ext=file.name.split('.').pop();
-          if (file.type=='application/json' || (ext=='json')) {
-            $scope.proofs.push(file);
+        function filterProofFile(file){
+          var ext=file.name.split('.').pop().toLowerCase();
+          if (ext!='json' || $scope.$state.current.name!='validateFile') {
+            return Promise.resolve(false);
           }
+          // check json content
+          return fileService.read(file,'readAsText')
+          .then(function(result){
+            var data=JSON.parse(result);
+            if (data.root && data.hash && data.anchors && data.operations) {
+              $rootScope.$broadcast('addProof',file);
+              return true;
+            }
+          });
+        }
+
+        fileService.filters.push(filterProofFile);
+        $scope.$on('addProof',function(event,file){
+            $scope.proofs.push(file);
         });
 
         // files have been added
