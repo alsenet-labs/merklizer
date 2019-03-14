@@ -35,9 +35,9 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.use('/sign/:addr/:token',require('./routes/sign'));
 app.use(express.static('./client/app/'));
 
-//app.use('/',require('./routes/someroute'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -32,6 +32,7 @@ var angular=require('angular');
 window.jQuery=window.$=require('jquery');
 require('floatthead');
 
+//window.web3=require('./ledger.js');
 require('../css/bootstrap.min.css');
 require('../css/main.css');
 
