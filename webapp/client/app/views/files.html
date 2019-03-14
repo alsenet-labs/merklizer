@@ -17,8 +17,8 @@
           <div ng-class="{anchor: $state.current=='anchor'}" type="button" class="btn btn-s btn-danger" ng-click="removeAll()">
             <span class="fa fa-recycle"></span> Clear List
           </div>
-          <div ng-class="{anchor: $state.current=='anchor'}" type="button" class="btn btn-s btn-primary" ng-click="process()">
-            <span class="fa fa-link"></span> Process {{queue.length}} file{{ queue.length > 1 ? 's' : '' }}
+          <div ng-if="filesCount" ng-class="{anchor: $state.current=='anchor'}" type="button" class="btn btn-s btn-primary" ng-click="process()">
+            <span class="fa fa-link"></span> Process {{filesCount}} file{{ filesCount > 1 ? 's' : '' }}
           </div>
         </div>
       </div>
@@ -32,9 +32,9 @@
             <th>Hash</th>
           </tr>
         </thead>
-        <tr ng-repeat="file in queue" ng-class="{duplicate: file.duplicate, 'has-proof': file.proof}">
-          <td class="filename" >{{file.name}}</td>
-          <td class="hash">{{file.hash_str}}</td>
+        <tr ng-if="!file.file" ng-repeat="file in queue" ng-class="{duplicate: file.duplicate, 'has-proof': file.proof}">
+          <td class="filename" title="{{file.duplicate?'Duplicate file':file.isProof&&!file.file?'Proof has no associated file':!file.isProof&&!file.hasProof?'File as no associated proof':''}}">{{file.name}}</td>
+          <td class="hash">{{file.isProof?'':file.hash_str}}</td>
         </tr>
       </table>
     </div>

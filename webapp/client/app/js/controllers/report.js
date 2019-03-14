@@ -85,7 +85,9 @@ module.exports=[
             else notValidated.push(file);
 
           } else {
-            noProof.push(file);
+            if (!file.isProof) {
+              noProof.push(file);
+            }
           }
         });
         if (validated.length+notValidated.length < proofs.length){

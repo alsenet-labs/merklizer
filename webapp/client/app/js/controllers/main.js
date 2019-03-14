@@ -44,6 +44,7 @@ module.exports=[
 //  'pdfService',
   'fileService',
   '$q',
+  '$transitions',
   function (
     $scope,
     $rootScope,
@@ -53,7 +54,8 @@ module.exports=[
     processing,
 //    pdfService,
     fileService,
-    $q
+    $q,
+    $transitions
   ) {
     this.awesomeThings = [
       'HTML5 Boilerplate',
@@ -68,6 +70,14 @@ module.exports=[
       proofChanged_removeListener: function(){},
 
       init: function(){
+        $transitions.onSuccess({}, function(transition) {
+          switch(transition.to().name) {
+            case 'validateFile':
+            case 'anchor':
+              $scope.proofs.splice(0);
+              break;
+          }
+        });
 
         $scope.$on('processFiles',function(event,queue){
             processing.processFiles(queue);
@@ -87,7 +97,7 @@ module.exports=[
 */
         function filterProofFile(file){
           var ext=file.name.split('.').pop().toLowerCase();
-          if (ext!='json' || $scope.$state.current.name!='validateFile') {
+          if (ext!='json') {
             return Promise.resolve(false);
           }
           // check json content
@@ -95,19 +105,29 @@ module.exports=[
           .then(function(result){
             var data=JSON.parse(result);
             if (data.root && data.hash && data.anchors && data.operations) {
+              if ($scope.$state.current.name!='validateFile') {
+                if (!$scope.tryingToAnchorProofsNotified) {
+                  $scope.tryingToAnchorProofsNotified=true;
+                  $window.alert('Cannot anchor proofs');
+                }
+                return true;
+              }
+              file.data=data;
               $rootScope.$broadcast('addProof',file);
-              return true;
+              return false;  // do not filter it out
             }
           });
         }
 
         fileService.filters.push(filterProofFile);
         $scope.$on('addProof',function(event,file){
-            $scope.proofs.push(file);
+          file.isProof=true;
+          $scope.proofs.push(file);
         });
 
         // files have been added
         $scope.$on('filesReady',function(event,files){
+          $scope.tryingToAnchorProofsNotified=false;
           if ($window.parent) {
             $window.parent.postMessage({
               type: 'filesReady'
@@ -130,11 +150,12 @@ module.exports=[
             })
             .then(function(proofsPairedCount){
               // validate files automatically when all files have an associated proof
-              if (proofsPairedCount && proofsPairedCount==files.length) {
+              if (proofsPairedCount && proofsPairedCount==files.length/2) {
                 $rootScope.$broadcast('processFiles',files);
               }
             })
           }
+          $scope.filesCount=files.length-$scope.proofs.length;
         });
 
         $scope.$on('filesValidated',function(event,files){
@@ -184,6 +205,7 @@ module.exports=[
             })
             .then(function(proof){
               file.proof=proof;
+              proofFile.file=file;
               q.resolve(file);
             })
             .catch(q.reject);
@@ -224,6 +246,10 @@ module.exports=[
               var file=queue[f];
               if (!file) {
                 qq.resolve();
+                return;
+              }
+              if (file.isProof) {
+                fileloop(f+1);
                 return;
               }
               if (file.proof) {
