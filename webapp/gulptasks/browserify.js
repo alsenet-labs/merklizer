@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2018 ALSENET SA
+* Copyright (c) 2018-2019 ALSENET SA
 *
 * Author(s):
 *
@@ -42,7 +42,7 @@ var es=require('event-stream');
 var debug=require('gulp-debug');
 var path = require('path');
 var fse = require('fs-extra');
-var gutil = require('gulp-util');
+var log = require('fancy-log');
 
 module.exports=function(options){
 
@@ -67,7 +67,7 @@ module.exports=function(options){
             autoInject: 'true',
             global: 'true',
             processRelativeUrl: function(relativeUrl) {
-              gutil.log('URL',relativeUrl)
+              log('relativeURL',relativeUrl)
                 var stripQueryStringAndHashFromPath = function(url) {
                     return url.split('?')[0].split('#')[0];
                 };
@@ -76,7 +76,7 @@ module.exports=function(options){
                 var queryStringAndHash = relativeUrl.substring(relativePath.length);
 
                 //
-                // Copying files from '../node_modules/bootstrap/' to 'dist/vendor/bootstrap/'
+                // Copying files from '../node_modules/.../' to 'dist/vendor/.../'
                 //
                 var prefix = '../../../node_modules/';
                 if (_.startsWith(relativePath, prefix)) {
@@ -84,7 +84,7 @@ module.exports=function(options){
                     var source = path.join(rootDir, relativePath);
                     var target = path.join(rootDir, vendorPath);
 
-                    gutil.log('Copying file from ' + JSON.stringify(source) + ' to ' + JSON.stringify(target));
+                    log('Copying file from ' + JSON.stringify(source) + ' to ' + JSON.stringify(target));
                     fse.copySync(source, target);
 
                     // Returns a new path string with original query string and hash fragments
@@ -97,7 +97,7 @@ module.exports=function(options){
           .transform(babelify, {
               presets: [["env",{
               "targets": {
-                "browsers": ["last 2 versions", "safari >=7"]
+                "browsers": ["last 2 versions"]
               }
             }]],
             sourceMaps: true
@@ -141,7 +141,7 @@ module.exports=function(options){
   return function(callback) {
     options=options||{};
     options.callback=callback||function(){};
-    return compile(options)
+    compile(options)
   }
 
 }
