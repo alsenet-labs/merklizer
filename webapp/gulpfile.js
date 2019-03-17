@@ -159,7 +159,10 @@ var renameRevFiles=function(es){
     var dest=path.join(file.revOrigBase,basename);
     fs.renameSync(file.revOrigPath, dest);
     revFiles.push({orig: file.revOrigPath, rev: dest});
-    try { fs.renameSync(file.revOrigPath+'.map', dest+'.map'); } catch(e) {}
+    try {
+      fs.renameSync(file.revOrigPath+'.map', dest+'.map');
+      shell.sed('-i',path.basename(file.revOrigPath)+'.map',basename+'.map', dest);
+    } catch(e) {}
     return cb(null,file);
   });
 }
