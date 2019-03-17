@@ -24,7 +24,6 @@ var gulp = require('gulp');
 var sass = require('gulp-sass');
 var browserSync = require('browser-sync');
 var gutil = require('gulp-util');
-var runSequence = require('run-sequence');
 var merge = require('merge-stream');
 var rename = require('gulp-rename');
 var rev = require('gulp-rev');
@@ -32,9 +31,10 @@ var shell = require('shelljs');
 var es = require('event-stream');
 var path = require('path');
 var fs = require('fs');
+var del = require('del');
 
 gulp.task('browserSync',function(){
-    browserSync.init(["client/app/css/bundle.css", "client/app/js/index.min.js","./client/app/index.html",'./client/app/views/**.html'], {
+    return browserSync.init(["client/app/css/bundle.css", "client/app/js/index.min.js","./client/app/index.html",'./client/app/views/**.html'], {
         watchOptions: {
           ignoreInitial: true
         },
@@ -83,7 +83,7 @@ gulp.task('watchify', require('./gulptasks/browserify.js')({
 }));
 
 gulp.task('watch', function(){
-      return gulp.watch("./client/app/sass/**.scss", ['sass']);
+      return gulp.watch("./client/app/sass/**.scss", gulp.series('sass'));
 //      gulp.watch(["./client/app/index.html",'./client/app/views/**.html']).on ('change',browserSync.reload);
 });
 
@@ -91,45 +91,20 @@ function callback(err,msg){
   if(err) throw err;
 }
 
-gulp.task('run', function() {
-  return runSequence(
+gulp.task('run', gulp.series(
     'copy',
     'sass',
-    'watch',
     'watchify',
-    'browserSync'
+    gulp.parallel(
+      'browserSync',
+      'watch'
+    )
+));
 
-  );
-});
+gulp.task('default',gulp.series('run'));
 
-gulp.task('default',['run']);
-
-gulp.task('build', function(callback){
-  runSequence(
-    'copy',
-    'sass',
-    'browserify',
-    'dist',
-    'rev',
-    function(err){
-      if (err) console.log(err.message);
-      callback(err);
-    }
-  );
-});
-
-gulp.task('build-ugly', function(callback){
-  runSequence(
-    'copy',
-    'sass',
-    'browserify-ugly',
-    'dist',
-    'rev',
-    function(err){
-      if (err) console.log(err.message);
-      callback(err);
-    }
-  );
+gulp.task('clean:dist', function(cb) {
+    return del(['./dist'], cb);
 });
 
 gulp.task('dist',  function(){
@@ -147,6 +122,31 @@ gulp.task('dist',  function(){
    return merge.apply(null,streams);
 
 });
+
+gulp.task('rev', function(){
+  return gulp.src(['./dist/js/index.min.js', './dist/css/bundle.css'])
+    .pipe(rev())
+    .pipe(renameRevFiles(es))
+    .pipe(injectRev(es,'./dist/index.html'));
+});
+
+gulp.task('build', gulp.series(
+    'copy',
+    'sass',
+    'browserify',
+    'clean:dist',
+    'dist',
+    'rev'
+));
+
+gulp.task('build-ugly', gulp.series(
+    'copy',
+    'sass',
+    'browserify-ugly',
+    'clean:dist',
+    'dist',
+    'rev'
+));
 
 var revFiles=[];
 // rename in place rev files (and their optional map file)
@@ -177,11 +177,3 @@ var injectRev=function(es,html){
     return cb(null,file);
   });
 }
-
-gulp.task('rev', ['dist'], function(){
-  gulp.src(['./dist/js/index.min.js', './dist/css/bundle.css'])
-    .pipe(rev())
-    .pipe(renameRevFiles(es))
-    .pipe(injectRev(es,'./dist/index.html'));
-});
-

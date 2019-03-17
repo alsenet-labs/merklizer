@@ -18,7 +18,8 @@
   "homepage": "https://github.com/alsenet-labs/merklizer#readme",
   "devDependencies": {
     "browser-sync": "^2.24.6",
-    "gulp": "^3.9.1",
+    "del": "^4.0.0",
+    "gulp": "^4.0.0",
     "merge-stream": "^1.0.1"
   }
 }

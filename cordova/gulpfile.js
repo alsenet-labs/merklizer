@@ -21,7 +21,6 @@
 */
 
 var gulp = require('gulp');
-var runSequence = require('run-sequence');
 var merge = require('merge-stream');
 var cordova=require('cordova-lib').cordova;
 var log=require('fancy-log');
@@ -30,7 +29,7 @@ var rev=require('gulp-rev-append');
 var rename=require('gulp-rename');
 
 gulp.task('rev', function() {
-  gulp.src("./www/index.html")
+  return gulp.src("./www/index.html")
     .pipe(rev())
     .pipe(gulp.dest('./www'))
     .on('error', log);
@@ -73,17 +72,13 @@ gulp.task('run', function(){
   }).catch(log));
 });
 
-gulp.task('build', function() {
-  return runSequence(
+gulp.task('build', gulp.series(
     'copy',
     'rev',
     'cordova-build'
-  )
-});
+));
 
-gulp.task('default', function() {
-  return runSequence(
+gulp.task('default', gulp.series(
     'build',
     'run'
-  )
-});
+));
