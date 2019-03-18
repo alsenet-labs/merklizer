@@ -21,6 +21,7 @@
 */
 
 var gulp = require('gulp');
+var debug = require('gulp-debug');
 var browserSync = require('browser-sync');
 var merge = require('merge-stream');
 var log = require('fancy-log');
@@ -51,13 +52,18 @@ gulp.task('build', function (callback) {
   });
 });
 
-gulp.task('html', gulp.series('build','getLatestTagName', function copy_html() {
+gulp.task('clean:html', function(cb){
+  return del('./html/'+tagName,cb);
+});
+
+gulp.task('copy:html', function(){
    var streams=[];
-   streams.push(del('./html/'+tagName+'/**'));
-   streams.push(gulp.src(['.nojekyll', './webapp/dist/**'])
+   streams.push(gulp.src(['./.nojekyll','./webapp/dist/**'])
    .pipe(gulp.dest('./html/'+tagName+'/')));
-   return merge.apply(null,streams);
-}));
+   return merge(streams).pipe(debug({title: 'Files:'}));
+});
+
+gulp.task('html', gulp.series('getLatestTagName', 'clean:html', 'copy:html'));
 
 gulp.task('browserSync', gulp.series('html', function browserSync(){
     return browserSync.init(['html/'+tagName+'/**'], {
