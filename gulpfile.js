@@ -54,7 +54,7 @@ gulp.task('build', function (callback) {
 gulp.task('html', gulp.series('build','getLatestTagName', function copy_html() {
    var streams=[];
    streams.push(del('./html/'+tagName+'/**'));
-   streams.push(gulp.src('./webapp/dist/**')
+   streams.push(gulp.src(['.nojekyll', './webapp/dist/**'])
    .pipe(gulp.dest('./html/'+tagName+'/')));
    return merge.apply(null,streams);
 }));

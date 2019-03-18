@@ -154,7 +154,7 @@ var renameRevFiles=function(es){
   revFiles.splice(0);
   return es.map(function(file,cb){
     var basename=path.basename(file.revOrigPath).split('.');
-    basename[0]=basename[0]+'.'+file.revHash;
+    basename[0]=basename[0]+'-'+file.revHash;
     basename=basename.join('.');
     var dest=path.join(file.revOrigBase,basename);
     fs.renameSync(file.revOrigPath, dest);
