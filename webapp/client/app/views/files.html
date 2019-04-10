@@ -33,7 +33,7 @@
           </tr>
         </thead>
         <tr ng-if="!file.file" ng-repeat="file in queue" ng-class="{duplicate: file.duplicate, 'has-proof': file.proof}">
-          <td class="filename" title="{{file.duplicate?'Duplicate file':file.isProof&&!file.file?'Proof has no associated file':!file.isProof&&!file.hasProof?'File as no associated proof':''}}">{{file.name}}</td>
+          <td class="filename" title="{{file.duplicate?'Duplicate file':file.isProof&&!file.file?'Proof has no associated file':!file.isProof&&!file.hasProof?'File has no associated proof':''}}">{{file.name}}</td>
           <td class="hash">{{file.isProof?'':file.hash_str}}</td>
         </tr>
       </table>
