@@ -1,0 +1,44 @@
+<div ng-cloak id="merkle-files" ng-cloak  files-read="false" files-drop="onFilesDropped($files, $event)" class="disable-selection" ng-class="{shrink: queue.length, blur: $root._showOverlay}" >
+  <div class="dashes" ng-if="!$root.mobileApp && !$root._showOverlay" ng-class="{over: mouseOverLabel}"></div>
+
+  <div class="nofilesyet d-flex w-100 justify-content-center" ng-class="{'h-100': !queue.length, 'h-25': queue.length}">
+    <div class="row align-self-center" ng-if="true">
+      <label data-toogle="tooltip" ng-attr-title="{{click_or_drop_files_here}}" ng-mouseenter="mouseEnter()" ng-mouseleave="mouseLeave()">
+        <h3 class="text-nowrap">{{click_or_drop_files_here}}</h3>
+        <input type="file" multiple accept="{{mimeTypes}}" style="display: none"  ng-model="selection" on-change="onFilesChanged($event)" />
+      </label>
+    </div>
+ </div>
+
+  <div class="bottom" ng-if="queue.length">
+    <div class="anchor-buttons">
+      <div>
+        <div>
+          <div ng-class="{anchor: $state.current=='anchor'}" type="button" class="btn btn-s btn-danger" ng-click="removeAll()">
+            <span class="fa fa-recycle"></span> Clear List
+          </div>
+          <div ng-if="filesCount" ng-class="{anchor: $state.current=='anchor'}" type="button" class="btn btn-s btn-primary" ng-click="process()">
+            <span class="fa fa-link"></span> Process {{filesCount}} file{{ filesCount > 1 ? 's' : '' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="files-wrapper">
+      <table class="files">
+        <thead>
+          <tr>
+            <th>Filename</th>
+            <th>Hash</th>
+          </tr>
+        </thead>
+        <tr ng-if="!file.file" ng-repeat="file in queue" ng-class="{duplicate: file.duplicate, 'has-proof': file.proof}">
+          <td class="filename" title="{{file.duplicate?'Duplicate file':file.isProof&&!file.file?'Proof has no associated file':!file.isProof&&!file.proof?'File as no associated proof':''}}">{{file.name}}</td>
+          <td class="hash">{{file.isProof?'':file.hash_str}}</td>
+        </tr>
+      </table>
+    </div>
+
+  </div>
+
+</div>

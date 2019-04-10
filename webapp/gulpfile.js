@@ -24,12 +24,17 @@ var gulp = require('gulp');
 var sass = require('gulp-sass');
 var browserSync = require('browser-sync');
 var gutil = require('gulp-util');
-var runSequence = require('run-sequence');
 var merge = require('merge-stream');
 var rename = require('gulp-rename');
+var rev = require('gulp-rev');
+var shell = require('shelljs');
+var es = require('event-stream');
+var path = require('path');
+var fs = require('fs');
+var del = require('del');
 
 gulp.task('browserSync',function(){
-    browserSync.init(["client/app/css/bundle.css", "client/app/js/index.min.js","./client/app/index.html",'./client/app/views/**.html'], {
+    return browserSync.init(["client/app/css/bundle.css", "client/app/js/index.min.js","./client/app/index.html",'./client/app/views/**.html'], {
         watchOptions: {
           ignoreInitial: true
         },
@@ -78,7 +83,7 @@ gulp.task('watchify', require('./gulptasks/browserify.js')({
 }));
 
 gulp.task('watch', function(){
-      return gulp.watch("./client/app/sass/**.scss", ['sass']);
+      return gulp.watch("./client/app/sass/**.scss", gulp.series('sass'));
 //      gulp.watch(["./client/app/index.html",'./client/app/views/**.html']).on ('change',browserSync.reload);
 });
 
@@ -86,46 +91,23 @@ function callback(err,msg){
   if(err) throw err;
 }
 
-gulp.task('run', function() {
-  return runSequence(
+gulp.task('run', gulp.series(
     'copy',
     'sass',
-    'watch',
     'watchify',
-    'browserSync'
+    gulp.parallel(
+      'browserSync',
+      'watch'
+    )
+));
 
-  );
+gulp.task('default',gulp.series('run'));
+
+gulp.task('clean:dist', function(cb) {
+    return del(['./dist'], cb);
 });
 
-gulp.task('default',['run']);
-
-gulp.task('build', function(callback){
-  runSequence(
-    'copy',
-    'sass',
-    'browserify',
-    'dist',
-    function(err){
-      if (err) console.log(err.message);
-      callback(err);
-    }
-  );
-});
-
-gulp.task('build-ugly', function(callback){
-  runSequence(
-    'copy',
-    'sass',
-    'browserify-ugly',
-    'dist',
-    function(err){
-      if (err) console.log(err.message);
-      callback(err);
-    }
-  );
-});
-
-gulp.task('dist', function(){
+gulp.task('dist',  function(){
    var streams=[];
    streams.push(gulp.src('./client/app/index.html')
    .pipe(gulp.dest('./dist/')));
@@ -137,12 +119,64 @@ gulp.task('dist', function(){
    .pipe(gulp.dest('./dist/css/')));
    streams.push(gulp.src('./node_modules/pretty-file-icons/svg/*')
    .pipe(gulp.dest('./dist/images/')));
-//  streams.push(gulp.src('./node_modules/zxing-typescript/docs/examples/zxing.qrcodereader.min.js')
-//   .pipe(gulp.dest('./dist/js/')));
-//   streams.push(gulp.src('./node_modules/pdfjs-dist/build/pdf.worker.min.js')
-//   .pipe(rename('index.worker.min.js'))
-//   .pipe(gulp.dest('./dist/js/')));
    return merge.apply(null,streams);
 
-
 });
+
+gulp.task('rev', function(){
+  return gulp.src(['./dist/js/index.min.js', './dist/css/bundle.css'])
+    .pipe(rev())
+    .pipe(renameRevFiles(es))
+    .pipe(injectRev(es,'./dist/index.html'));
+});
+
+gulp.task('build', gulp.series(
+    'copy',
+    'sass',
+    'browserify',
+    'clean:dist',
+    'dist',
+    'rev'
+));
+
+gulp.task('build-ugly', gulp.series(
+    'copy',
+    'sass',
+    'browserify-ugly',
+    'clean:dist',
+    'dist',
+    'rev'
+));
+
+var revFiles=[];
+// rename in place rev files (and their optional map file)
+var renameRevFiles=function(es){
+  revFiles.splice(0);
+  return es.map(function(file,cb){
+    var basename=path.basename(file.revOrigPath).split('.');
+    basename[0]=basename[0]+'-'+file.revHash;
+    basename=basename.join('.');
+    var dest=path.join(file.revOrigBase,basename);
+    fs.renameSync(file.revOrigPath, dest);
+    revFiles.push({orig: file.revOrigPath, rev: dest});
+    try {
+      fs.renameSync(file.revOrigPath+'.map', dest+'.map');
+      shell.sed('-i',path.basename(file.revOrigPath)+'.map',basename+'.map', dest);
+    } catch(e) {}
+    return cb(null,file);
+  });
+}
+
+// replace reference to rev files in specified html
+var injectRev=function(es,html){
+  var html=path.resolve(html);
+  var base=path.dirname(html);
+  return es.map(function(file,cb){
+    revFiles.forEach(function(file){
+      var orig=file.orig.substr(base.length+1);
+      var rev=file.rev.substr(base.length+1);
+      shell.sed('-i','"'+orig+'"','"'+rev+'"',html);
+    });
+    return cb(null,file);
+  });
+}

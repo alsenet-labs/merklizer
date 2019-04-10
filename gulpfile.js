@@ -21,13 +21,14 @@
 */
 
 var gulp = require('gulp');
+var debug = require('gulp-debug');
 var browserSync = require('browser-sync');
-var gutil = require('gulp-util');
 var merge = require('merge-stream');
 var log = require('fancy-log');
 var exec = require('child_process').exec;
 var tagName;
 var fs=require('fs');
+var del=require('del');
 
 gulp.task('getLatestTagName', function (callback) {
   if (process.env.MERKLIZER_TAGNAME) {
@@ -43,8 +44,29 @@ gulp.task('getLatestTagName', function (callback) {
   });
 })
 
-gulp.task('browserSync', ['getLatestTagName'], function(){
-    browserSync.init(['html/'+tagName+'/**'], {
+gulp.task('build', function (callback) {
+  exec('make webapp-ugly', function (err, stdout, stderr) {
+    log(stdout);
+    log(stderr);
+    callback(err);
+  });
+});
+
+gulp.task('clean:html', function(cb){
+  return del('./html/'+tagName,cb);
+});
+
+gulp.task('copy:html', function(){
+   var streams=[];
+   streams.push(gulp.src(['./.nojekyll','./webapp/dist/**'])
+   .pipe(gulp.dest('./html/'+tagName+'/')));
+   return merge(streams).pipe(debug({title: 'Files:'}));
+});
+
+gulp.task('html', gulp.series('getLatestTagName', 'clean:html', 'copy:html'));
+
+gulp.task('browserSync', gulp.series('html', function browserSync(){
+    return browserSync.init(['html/'+tagName+'/**'], {
         watchOptions: {
           ignoreInitial: true
         },
@@ -55,25 +77,9 @@ gulp.task('browserSync', ['getLatestTagName'], function(){
         https: true,
         startPath: tagName+'/index.html#!/validate-file',
     });
-});
+}));
 
-gulp.task('html', [/*'build',*/'getLatestTagName'], function () {
-   var streams=[];
-   streams.push(gulp.src('./webapp/dist/**')
-   .pipe(gulp.dest('./html/'+tagName+'/')));
-   return merge.apply(null,streams);
-});
-
-
-gulp.task('build', function (callback) {
-  exec('make webapp-ugly', function (err, stdout, stderr) {
-    log(stdout);
-    log(stderr);
-    callback(err);
-  });
-})
-
-gulp.task('update-ghpages', ['html'], function(callback){
+gulp.task('update-ghpages', gulp.series('html', function update_ghpages_index(callback){
   var err;
   try {
     fs.writeFileSync('html/redirect.js', "window.location.assign('html/"+tagName+"/index.html#!/validate-file');\n");
@@ -81,9 +87,6 @@ gulp.task('update-ghpages', ['html'], function(callback){
     err=e;
   }
   callback(err);
-});
+}));
 
-gulp.task('default',['update-ghpages'], function(callback) {
-  log('gh-page updated');
-  callback(null);
-});
+gulp.task('default',gulp.series('update-ghpages'));
