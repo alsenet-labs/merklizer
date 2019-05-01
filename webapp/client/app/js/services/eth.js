@@ -94,6 +94,19 @@ module.exports=[
           eth=service.eth=service._eth[network];
 
         })
+        .then(function metamask_enableEthereum(){
+          if (window && window.ethereum && window.ethereum.enable) {
+            try {
+              return window.ethereum.enable().catch(function(err){
+                if (window && window.alert) {
+                  window.alert('Could not enable Metamask !');
+                }
+              });
+            } catch(e) {
+              console.log(e);
+            }
+          }
+        })
         .then(function(){
           var q=Q.defer();
           eth.accounts()
