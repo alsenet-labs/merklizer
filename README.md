@@ -122,6 +122,18 @@ request accounts details interactively.
 
 ## Troubleshooting
 
+### TypeError: Cannot read property 'apply' of undefined
+Message:
+```
+(...)/lib/node_modules/gulp/bin/gulp.js:129
+    gulpInst.start.apply(gulpInst,toRun); TypeError: Cannot read property 'apply' of undefined
+```
+Fix with:
+```
+node i -g gulp-cli
+```
+or remove gulp globally and re-install 4.0 globally
+
 ### EACCESS error when building project
 Message:
 ```
