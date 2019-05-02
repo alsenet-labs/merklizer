@@ -19,6 +19,7 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
+'use strict';
 
 var gulp = require('gulp');
 var debug = require('gulp-debug');
