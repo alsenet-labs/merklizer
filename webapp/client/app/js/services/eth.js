@@ -97,11 +97,7 @@ module.exports=[
         .then(function metamask_enableEthereum(){
           if (window && window.ethereum && window.ethereum.enable) {
             try {
-              return window.ethereum.enable().catch(function(err){
-                if (window && window.alert) {
-                  window.alert('Could not enable Metamask !');
-                }
-              });
+              return window.ethereum.enable().catch(console.log);
             } catch(e) {
               console.log(e);
             }
