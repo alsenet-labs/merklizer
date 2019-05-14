@@ -80,8 +80,15 @@ module.exports=[
         });
 
         $scope.$on('processFiles',function(event,queue){
-            processing.processFiles(queue);
+          var action;
+          if ($rootScope.$state.current.name=='validateFile') {
+            action='validate'
+          } else {
+            action=$rootScope.$state.current.name;
+          }
+          processing.processFiles(action,queue);
         });
+
         $scope.$on('validateFile',function(event,file){
             $scope.validate(file);
         });
