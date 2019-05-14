@@ -172,13 +172,10 @@ module.exports=[
           });
         });
 
-        $scope.$on('showAnchors',function(event,file){
-          processing.showAllAnchors(file.proof.anchors);
+        $scope.$on('alert',function(event,message){
+          $window.alert(message);
         });
 
-        $scope.$on('showProof',function(event,file){
-          processing.showProof(file.proof,file.name+'.json');
-        });
 
 
       }, // init

@@ -40,7 +40,6 @@ if (isAngularJS) {
   module.exports = [
     '$q',
     '$rootScope',
-    '$window',
     '$timeout',
     'merkle',
     'ethService',
@@ -50,7 +49,6 @@ if (isAngularJS) {
     function(
       $q,
       $rootScope,
-      $window,
       $timeout,
       merkle,
       ethService,
@@ -66,7 +64,6 @@ if (isAngularJS) {
         $q,
         trigger,
         config,
-        $window,
         $timeout,
         merkle,
         ethService,
@@ -83,7 +80,6 @@ if (isAngularJS) {
     $q,
     trigger,
     config,
-    $window,
     $timeout,
     merkle,
     ethService,
@@ -102,7 +98,6 @@ if (isAngularJS) {
       $q,
       trigger,
       config,
-      $window,
       timeout,
       merkle,
       btcService,
@@ -116,7 +111,6 @@ function _service(
   $q,
   trigger,
   config,
-  $window,
   $timeout,
   merkle,
   ethService,
@@ -399,7 +393,7 @@ function _service(
       .catch(function(err){
         service.hideOverlay();
         console.log('Error !',err);
-        $window.alert(err.message||(err.value&&err.value.message&&err.value.message.split('\n')[0])||'Unexpected error !');
+        trigger('alert', err.message||(err.value&&err.value.message&&err.value.message.split('\n')[0])||'Unexpected error !');
       })
 /*
       .finally(function(){
@@ -573,7 +567,7 @@ function _service(
         })
         .catch(function(err) {
           console.log(err);
-          $window.alert(err.message);
+          trigger('alert', err.message);
           service.hideOverlay();
         })
 
@@ -639,7 +633,7 @@ function _service(
       if (!file.proof) {
         console.log('no merkle proof',file);
         if (!options.silent) {
-          $window.alert('No merkle proof !');
+          trigger('alert', 'No merkle proof !');
         }
         return $q.resolve(false);
       }
@@ -651,7 +645,7 @@ function _service(
       if (file.hash && merkle.hashToString(file.proof.hash)!=merkle.hashToString(file.hash[file.proof.hashType])) {
         console.log('hash mismatch between file and proof !',file);
         if (!options.silent) {
-          $window.alert('Hash mismatch between file and proof !');
+          trigger('alert', 'Hash mismatch between file and proof !');
         }
         file.proof.validated=false;
         return $q.resolve(false);
@@ -669,7 +663,7 @@ function _service(
         ) {
           console.log('hash mismatch between description and proof !',file);
           if (!options.silent) {
-            $window.alert('Hash mismatch between description and proof !');
+            trigger('alert', 'Hash mismatch between description and proof !');
           }
           file.proof.validated=false;
           return $q.resolve(false);
@@ -860,17 +854,10 @@ function _service(
         return q.promise;
 
       })
-      .then(function(validated){
-        if (!options.silent) {
-  //        $window.alert('The proof was '+(validated?'successfuly':'NOT')+' validated !');
-        }
-        return validated;
-
-      })
       .catch(function(err){
         service.hideOverlay();
         console.log('Error !',err);
-        $window.alert(err.message||(err.value&&err.value.message&&err.value.message.split('\n')[0])||'Unexpected error !');
+        trigger('alert', err.message||(err.value&&err.value.message&&err.value.message.split('\n')[0])||'Unexpected error !');
 
       })
       .finally(function(){
@@ -878,38 +865,6 @@ function _service(
       });
 
     }, // validate
-
-    showProof: function(proof,title){
-      proof=service.getReadableProof(proof);
-      var w=$window.open('',title||proof.hash);
-      $timeout(function(){
-        w.document.open();
-        w.document.write('<html><head><meta charset="UTF8" /><title>'+(title||proof.hash)+'</title></head><body><pre>'+JSON.stringify(proof,false,2)+'</pre></body></html>');
-        w.document.close();
-      });
-    }, // showProof
-
-    showAllAnchors: function(anchors){
-      anchors.forEach(function(anchor){
-        service.showAnchor(anchor);
-      });
-    },
-
-    showAnchor: function(anchor){
-      switch(anchor.type) {
-        case 'ethereum':
-          $window.open(service.getAnchorUrl(anchor),anchor.transactionId);
-          break;
-      }
-    },
-
-    getAnchorUrl: function(anchor) {
-      switch(anchor.type) {
-        case 'ethereum':
-           var subdomain=(anchor.networkId==1)?'':(ethService.network_name[anchor.networkId]+'.');
-           return 'https://'+subdomain+'etherscan.io/tx/'+anchor.transactionId;
-       }
-    }, // getAnchorUrl
 
     validateAll: function(files) {
       var q=$q.defer();
