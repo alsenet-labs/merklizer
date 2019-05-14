@@ -53,7 +53,9 @@ var app=angular.module('merkleApp',[
 .service('QRCodeService',require('./services/qrcode.js'))
 .service('processing',require('./services/processing.js'))
 .service('fileService',require('./services/file.js'))
-.service('merkle',require('./services/merkle.js')(window.crypto.subtle.digest))
+.service('merkle',require('./services/merkle.js')(function indigest(hash_type,data){
+  return window.crypto.subtle.digest(hash_type,data)
+}))
 //.service('tierion',require('./services/tierion.js'))
 .service('ethService',require('./services/eth.js'))
 .service('btcService',require('./services/btc.js'))
