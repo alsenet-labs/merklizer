@@ -100,7 +100,7 @@ make run-cordova-android
 Rebuild the gh-pages demo with:
 ```
 git stash save # don't include anything not yet commited
-export TAG=<tag>
+export TAG=<tag> # think about version in package.json, cordova/package.json and webapp/package.json
 gulp build
 MERKLIZER_TAGNAME=$TAG gulp update-ghpages
 git add html
