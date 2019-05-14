@@ -29,7 +29,10 @@ with AngularJS, eg:
    ])
    .config(require('./config.js'))
    .run(require('./run.js'))
-   .service('merkle',require('./services/merkle.js')(window.crypto.subtle.digest))
+   .service('merkle',require('./services/merkle.js')(function digest(hash_type,data){
+     // we cannot pass the digest function pointer to the module for "security" reasons..
+     return window.crypto.subtle.digest(hash_type,data)
+   }))
 
 with NodeJS, eg:
   var Q=require('q');
@@ -76,7 +79,6 @@ function _merkle($q,digest){
 
     _hash: {
       SHA256: function hash(data){
-        debugger;
         return digest('SHA-256',data).then(function(a){
           return new Uint8Array(a);
         });
@@ -151,7 +153,7 @@ function _merkle($q,digest){
       var leaves=[];
       var tree=[leaves];
 
-      angular.forEach(objectList,function(obj){
+      objectList.forEach(function(obj){
         leaves.push(obj);
       });
 
