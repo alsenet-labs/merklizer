@@ -1,1 +1,1 @@
-window.location.assign('html/v1.1.3-beta/index.html#!/validate-file');
+window.location.assign('html/1.1.4-beta/index.html#!/validate-file');
