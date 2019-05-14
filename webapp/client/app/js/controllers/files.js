@@ -68,6 +68,11 @@ module.exports=[
         value: 0
       },
       init: function() {
+        switch($rootScope.$state.current.name) {
+          case 'validateFile': $scope.action='Validate'; break;
+          case 'anchor': $scope.action='Anchor'; break;
+          default: $window.alert('unknown state: '+$rootScope.$state.current.name); break;
+        }
         if ($scope.mobileApp) {
           $scope.click_or_drop_files_here="Click here.";
         } else {

@@ -4,7 +4,7 @@
   <div class="nofilesyet d-flex w-100 justify-content-center" ng-class="{'h-100': !queue.length, 'h-25': queue.length}">
     <div class="row align-self-center" ng-if="true">
       <label data-toogle="tooltip" ng-attr-title="{{click_or_drop_files_here}}" ng-mouseenter="mouseEnter()" ng-mouseleave="mouseLeave()">
-        <h3 class="text-nowrap">{{click_or_drop_files_here}}</h3>
+        <h3 class="text-nowrap">{{action}} files here.</h3>
         <input type="file" multiple accept="{{mimeTypes}}" style="display: none"  ng-model="selection" on-change="onFilesChanged($event)" />
       </label>
     </div>
