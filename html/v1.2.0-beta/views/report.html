@@ -1,0 +1,68 @@
+<div ng-cloak class="report-wrapper">
+  <div class="report">
+    <div class="file" ng-repeat="file in sortedFiles">
+      <div class="details" ng-if="file.proof && !file.proof.validated">
+        <p ng-if="file.hash && !file.url" class="status">The file "{{::file.name}}" could not be validated.</p>
+        <p ng-if="file.Hash" class="status">The file "<a href="{{::file.url}}" download="{{::file.name}}">{{::file.name}}</a>" could not be validated.</p>
+        <p ng-if="!file.hash" class="status">The QR proof could not be validated.</p>
+      </div>
+      <div class="details" ng-if="!file.proof">
+        <p ng-if="file.hash && !file.url" class="status">The file "{{::file.name}}" could not be validated because it had no associated proof.</p>
+        <p ng-if="file.hash && file.url" class="status">The file "<a href="{{::file.url}}" download="{{::file.name}}">{{::file.name}}</a>" could not be validated because it had no associated proof.</p>
+      </div>
+      <div class="details" ng-if="file.proof && file.proof.validated">
+        <p ng-if="file.hash && !file.url" class="status">The file "{{::file.name}}" looks genuine.</p>
+        <p ng-if="file.hash && file.url" class="status">The file "<a href="{{::file.url}}" download="{{::file.name}}">{{::file.name}}</a>" looks genuine.</p>
+        <p ng-if="!file.hash" class="status">The QR proof was validated successfuly.</p>
+        <div ng-if="file.proof.htext">
+          <hr class="proof-htext" />
+          <p>{{::file.proof.htext_str}}</p>
+        </div>
+        <hr />
+        <div>The following facts have been established conclusively:</div>
+        <ul>
+          <li ng-if="file.proof.htext">
+            <span>The {{::file.proof.hashType}} hash of the text above match the hash stored in the proof <span class="hash">{{::file.proof.htext_hash}}</span></span>
+          </li>
+          <li ng-if="file.hash">
+            <span>The file hash match the {{::file.proof.hashType}} hash stored in the proof <span class="hash">{{::file.proof.hash}}</span></span>
+          </li>
+          <li ng-if="file.proof.operations.length">
+            <span ng-if="file.hash">The Merkle root <span class="hash">{{::file.proof.root}}</span> has been recomputed sucessfuly from the file hash after the following operation<span ng-if="file.proof.operations.length>1">s</span>:</span>
+            <span ng-if="!file.hash && !file.proof.htext">The Merkle root <span class="hash">{{::file.proof.root}}</span> has been recomputed sucessfuly from the {{::file.proof.hashType}} hash stored in the proof <span class="hash">{{::file.proof.hash}}</span> after the following operation<span ng-if="file.proof.operations.length>1">s</span>:</span>
+            <span ng-if="!file.hash && file.proof.htext">The Merkle root <span class="hash">{{::file.proof.root}}</span> has been recomputed sucessfuly from the hash of the text above, after the following operation<span ng-if="file.proof.operations.length>1">s</span>:</span>
+            <ul class="operations">
+              <li ng-repeat="operation in file.proof.operations">
+                <span ng-repeat="(key, value) in operation"><span class="key">{{key}}</span>: <span class="hash">{{value}}</span></span>
+              </li>
+            </ul>
+          </li>
+          <li ng-if="file.proof.operations.length">
+            <span>The Merkle root has been retrieved sucessfuly in the transaction<span ng-if="file.proof.anchors.length>1">s</span> mentioned in the proof:</span>
+            <ul class="anchors">
+              <li class="anchor" ng-repeat="anchor in file.proof.anchors">
+                <div anchor="anchor"></div>
+              </li>
+            </ul>
+          </li>
+          <li ng-if="!file.proof.operations.length">
+            <span>The file hash has been retrieved successfuly in the transaction<span ng-if="file.proof.anchors.length>1">s</span> mentioned in the proof:</span>
+            <ul class="anchors">
+              <li class="anchor" ng-repeat="anchor in file.proof.anchors">
+                <div anchor="anchor"></div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="file" ng-repeat="file in unusedProofs">
+      <div class="details">
+        <p class="status">The proof "{{::file.name}}" had no associated file.</p>
+      </div>
+    </div>
+    <center><div type="button" class="btn btn-s btn-primary" onclick="document.location.reload()">
+      <span class="fa fa-fw fa-sync"></span>Continue
+    </div></center>
+  </div>
+</div>
