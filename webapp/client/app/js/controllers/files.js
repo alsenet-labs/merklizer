@@ -92,14 +92,6 @@ module.exports=[
         $rootScope.$broadcast('processFiles',$scope.queue);
       },
 
-      showOverlay: function(options){
-        $rootScope.$broadcast('showOverlay',options);
-      },
-
-      hideOverlay: function(){
-        $rootScope.$broadcast('hideOverlay');
-      },
-
       removeDuplicates: function(){
         var fileList=$scope.queue;
         var hashType=fileList && fileList.length && fileList[0].hashType;

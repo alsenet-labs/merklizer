@@ -69,6 +69,7 @@ module.exports=[
 
       showOverlay: function(options) {
         $scope.message=(options&&options.message)||$scope.message||'Please wait...';
+        $scope.progress=options.progress;
         $scope.showProgress=options.showProgress||(options.showProgress!==false && $scope.showProgress);
         $scope.hideDialog=(options.hideDialog==true);
         $scope.showButton=(options.showButton!=false);

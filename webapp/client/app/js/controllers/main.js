@@ -81,7 +81,7 @@ module.exports=[
 
         $scope.$on('processFiles',function(event,queue){
           var action;
-          if ($rootScope.$state.current.name=='validateFile') {
+          if ($rootScope.$state.current.name=='validateFile' || $rootScope.$state.current.name=='ipfs') {
             action='validate'
           } else {
             action=$rootScope.$state.current.name;
@@ -112,7 +112,7 @@ module.exports=[
           .then(function(result){
             var data=JSON.parse(result);
             if (data.root && data.hash && data.anchors && data.operations) {
-              if ($scope.$state.current.name!='validateFile') {
+              if ($scope.$state.current.name!='validateFile' && $scope.$state.current.name!='ipfs') {
                 if (!$scope.tryingToAnchorProofsNotified) {
                   $scope.tryingToAnchorProofsNotified=true;
                   $window.alert('Cannot anchor proofs');
@@ -140,7 +140,7 @@ module.exports=[
               type: 'filesReady'
             }, $window.document.location.origin);
           }
-          if ($scope.$state.current.name=='validateFile') {
+          if ($scope.$state.current.name=='validateFile' || $scope.$state.current.name=='ipfs') {
             // associate proofs with files using hash comparison
             $scope.associateProofsWithFiles($scope.proofs,files,function(proof,file){
               return (file.hash_str[proof.data.hashType]==proof.data.hash)
@@ -267,8 +267,13 @@ module.exports=[
               // compute hash if proof.hashType is not the one used to spot duplicates
               if (!file.hash[proof.data.hashType]) {
                 qqq=qqq.then(function(){
-                  return fileService.read(file,'readAsArrayBuffer')
-                  .then(function(buf) {
+                  var promise;
+                  if (file.buffer) {
+                    promise=$q.resolve(file.buffer);
+                  } else {
+                    promise=fileService.read(file,'readAsArrayBuffer');
+                  }
+                  promise.then(function(buf) {
                     return merkle.hash(buf,proof.data.hashType);
                   })
                   .then(function(result){

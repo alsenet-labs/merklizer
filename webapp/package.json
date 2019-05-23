@@ -69,6 +69,7 @@
     "q": "^1.5.1",
     "qrcode-svg": "https://github.com/danioso/qrcode-svg",
     "request": "^2.85.0",
+    "request-progress": "^3.0.0",
     "safe-buffer": "^5.1.1",
     "text-encoding": "^0.6.4"
   }

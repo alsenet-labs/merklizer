@@ -2,14 +2,17 @@
   <div class="report">
     <div class="file" ng-repeat="file in sortedFiles">
       <div class="details" ng-if="file.proof && !file.proof.validated">
-        <p ng-if="file.hash" class="status">The file "{{::file.name}}" could not be validated.</p>
+        <p ng-if="file.hash && !file.url" class="status">The file "{{::file.name}}" could not be validated.</p>
+        <p ng-if="file.Hash" class="status">The file "<a href="{{::file.url}}" download="{{::file.name}}">{{::file.name}}</a>" could not be validated.</p>
         <p ng-if="!file.hash" class="status">The QR proof could not be validated.</p>
       </div>
       <div class="details" ng-if="!file.proof">
-        <p ng-if="file.hash" class="status">The file "{{::file.name}}" could not be validated because it had no associated proof.</p>
+        <p ng-if="file.hash && !file.url" class="status">The file "{{::file.name}}" could not be validated because it had no associated proof.</p>
+        <p ng-if="file.hash && file.url" class="status">The file "<a href="{{::file.url}}" download="{{::file.name}}">{{::file.name}}</a>" could not be validated because it had no associated proof.</p>
       </div>
       <div class="details" ng-if="file.proof && file.proof.validated">
-        <p ng-if="file.hash" class="status">The file "{{::file.name}}" looks genuine.</p>
+        <p ng-if="file.hash && !file.url" class="status">The file "{{::file.name}}" looks genuine.</p>
+        <p ng-if="file.hash && file.url" class="status">The file "<a href="{{::file.url}}" download="{{::file.name}}">{{::file.name}}</a>" looks genuine.</p>
         <p ng-if="!file.hash" class="status">The QR proof was validated successfuly.</p>
         <div ng-if="file.proof.htext">
           <hr class="proof-htext" />

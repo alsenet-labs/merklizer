@@ -1,5 +1,8 @@
 {
   "include_associated_text_files_in_proof": false,
   "include_standalone_text_files_in_proof": false,
-  "generate_qrcode": false
+  "generate_qrcode": false,
+  "ipfs": {
+    "baseUrl": "https://ipfs.io/"
+  }
 }

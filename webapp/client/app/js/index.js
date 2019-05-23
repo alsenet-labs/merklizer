@@ -68,5 +68,6 @@ var app=angular.module('merkleApp',[
 .controller('ProcessedCtrl',require('./controllers/processed.js'))
 .controller('OverlayCtrl',require('./controllers/overlay.js'))
 .controller('ReportCtrl',require('./controllers/report.js'))
+.controller('IpfsCtrl',require('./controllers/ipfs.js'))
 //.filter('prettyFileIcon',require('./filters/pretty-file-icon.js'))
 .filter('stringify',require('./filters/stringify.js'))

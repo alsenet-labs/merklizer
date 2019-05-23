@@ -52,15 +52,6 @@ module.exports=[
     ];
 
     angular.extend($scope,{
-
-      showOverlay: function(options){
-        $rootScope.$broadcast('showOverlay',options);
-      },
-
-      hideOverlay: function(){
-        $rootScope.$broadcast('hideOverlay');
-      },
-
       init: function(){
         if (!$scope.$stateParams.files || !$scope.$stateParams.files.length) {
           $scope.$state.go('validateFile');

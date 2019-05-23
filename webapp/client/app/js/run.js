@@ -37,7 +37,18 @@ module.exports=[
     $transitions
   ) {
 
-    $rootScope.config=require('../../../config.json');
+    angular.extend($rootScope,{
+      config: require('../../../config.json'),
+      $state: $state,
+      $stateParams: $stateParams,
+      mobileApp: (['http:','https:'].indexOf($window.document.location.protocol)<0),
+      showOverlay: function(options){
+        $rootScope.$broadcast('showOverlay',options);
+      },
+      hideOverlay: function(){
+        $rootScope.$broadcast('hideOverlay');
+      }
+    });
 
     $rootScope.$on('showOverlay',function(event,options){
       if ($window.parent) {
@@ -71,9 +82,6 @@ module.exports=[
         console.log('unhandled message', msg);
       }
     }
-    $rootScope.$state=$state;
-    $rootScope.$stateParams=$stateParams;
-    $rootScope.mobileApp=['http:','https:'].indexOf($window.document.location.protocol)<0;
     $transitions.onSuccess({}, function(transition) {
       $rootScope.title = transition.to().title;
       // allow state related css rules

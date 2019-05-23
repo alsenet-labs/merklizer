@@ -95,7 +95,13 @@ module.exports=[
         files: null,
         proofs: null
       }
-    });
+    })
+    .state('ipfs', {
+      url: '/ipfs/{path:.*}',
+      templateUrl: 'views/ipfs.html',
+      controller: 'IpfsCtrl',
+      title: 'Validating'
+    })
 
   }
 ];
