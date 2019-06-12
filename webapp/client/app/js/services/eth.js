@@ -78,7 +78,19 @@ module.exports=[
         }
         network=service.network_name[network]||network;
 
-        return service.getWeb3Network()
+        function metamask_enableEthereum(){
+          if (window && window.ethereum && window.ethereum.enable) {
+            try {
+              return window.ethereum.enable().catch(console.log);
+            } catch(e) {
+              console.log(e);
+            }
+          }
+          return Q.resolve();
+        }
+
+        return metamask_enableEthereum()
+        .then(service.getWeb3Network)
         .then(function(web3Network){
           if (!service._eth[network]) {
             // give priority to Metamask over configuration file
@@ -93,15 +105,6 @@ module.exports=[
           }
           eth=service.eth=service._eth[network];
 
-        })
-        .then(function metamask_enableEthereum(){
-          if (window && window.ethereum && window.ethereum.enable) {
-            try {
-              return window.ethereum.enable().catch(console.log);
-            } catch(e) {
-              console.log(e);
-            }
-          }
         })
         .then(function(){
           var q=Q.defer();
