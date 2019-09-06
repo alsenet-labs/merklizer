@@ -100,6 +100,7 @@ if (isAngularJS) {
       config,
       $timeout,
       merkle,
+      ethService,
       btcService,
       fileService,
       FileSaver
