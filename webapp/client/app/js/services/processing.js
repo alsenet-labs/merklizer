@@ -98,7 +98,7 @@ if (isAngularJS) {
       $q,
       trigger,
       config,
-      timeout,
+      $timeout,
       merkle,
       btcService,
       fileService,
