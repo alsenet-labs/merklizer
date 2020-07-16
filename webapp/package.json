@@ -34,7 +34,7 @@
     "gulp-sourcemaps": "^2.6.3",
     "gulp-streamify": "^1.0.2",
     "gulp-uglify": "^3.0.0",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.19",
     "lodash.assign": "^4.2.0",
     "merge-stream": "^1.0.1",
     "run-sequence": "^2.2.1",
