@@ -4,5 +4,11 @@
   "generate_qrcode": false,
   "ipfs": {
     "baseUrl": "https://ipfs.io/"
+  },
+  "ethswarm": {
+    "uploadFiles": true,
+    "uploadEncrypted": false,
+    "uploadProofs": true,
+    "baseUrl": "https://gateway.ethswarm.org"
   }
 }
