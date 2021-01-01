@@ -4,7 +4,7 @@ Web app for computing Merkle trees and anchoring hashes to the open public block
 __Under active development, don't use it for production yet.__
 
 ## Copyright
- Copyright (c) 2018-2019 ALSENET SA
+ Copyright (c) 2018-2021 ALSENET SA
 
 ## Authors
   * Alexandre Poltorak <polto@alsenet.com>
