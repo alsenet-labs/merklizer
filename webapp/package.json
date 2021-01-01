@@ -71,6 +71,7 @@
     "request": "^2.85.0",
     "request-progress": "^3.0.0",
     "safe-buffer": "^5.1.1",
+    "tar-js": "^0.3.0",
     "text-encoding": "^0.6.4"
   }
 }

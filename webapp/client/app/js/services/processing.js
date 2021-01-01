@@ -23,6 +23,7 @@
 'use strict';
 
 var JSZip=require('jszip');
+var Tar=require('tar-js');
 const Buffer = require('safe-buffer').Buffer;
 const QRCode = require('qrcode-svg')
 
@@ -460,31 +461,71 @@ function _service(
       try {
         var merkleRoot=merkle.getRoot(service.tree);
         var zip;
+        var tar;
         var folder;
 
         if (testing) {
           folder={
-            file: function(){}
+            file: function(){
+              return $q.resolve();
+            }
           };
 
         } else {
-          zip=new JSZip();
-          folder=zip.folder(/*merkleRoot*/);
+          switch(config.archive_format) {
+            case 'zip':
+              zip=new JSZip();
+              folder={
+                file: function(filename,content) {
+                  zip.folder(/*merkleRoot*/)(filename,content);
+                  return $q.resolve();
+                }
+              }
+              break;
+            case 'tar':
+              tape=new Tar();
+              folder={
+                file: function(filename,content){
+                  var q=$q.defer();
+                  tape.append(filename,new Uint8Array(content),function(_tar){
+                    tar=_tar;
+                    q.resolve();
+                  });
+                  return q.promise;
+                }
+              }
+              break;
+          }
         }
 
         function addFileToArchive(file) {
-          var json=JSON.stringify(service.getReadableProof(file.proof,testing),false,2);
-          folder.file(file.name+'.json',json);
-          if (config.generate_qrcode) {
-            try {
-              folder.file(file.name+'.svg',new QRCode(json).svg());
-            } catch(e) {
-              console.log(e);
-              if (testing) {
-                throw new Error('Could not create QRCode for '+file.name+'. ('+e.message+')');
-              }
+          var q;
+          if (config.add_original_files_to_archive) {
+            if (file.buffer) {
+              q=$q.resolve(file.buffer);
+            } else {
+              q=fileService.read(file,'readAsArrayBuffer');
             }
+            q=q.then(function(buf){
+              folder.file(file.name,buf);
+            })
           }
+          var json=JSON.stringify(service.getReadableProof(file.proof,testing),false,2);
+          return q.then(function(){
+            return folder.file(file.name+'.json',json)
+            .then(function(){
+              if (config.generate_qrcode) {
+                try {
+                  return folder.file(file.name+'.svg',new QRCode(json).svg());
+                } catch(e) {
+                  console.log(e);
+                  if (testing) {
+                    throw new Error('Could not create QRCode for '+file.name+'. ('+e.message+')');
+                  }
+                }
+              }
+            })
+          })
         }
 
         (function loop(i){
@@ -518,7 +559,9 @@ function _service(
                 file.proof.htext=result;
               })
               .then(function(){
-                addFileToArchive(file);
+                return addFileToArchive(file);
+              })
+              .then(function(){
                 loop(i+1);
               })
               .catch(q.reject);
@@ -535,7 +578,9 @@ function _service(
             })
             .then(function(result){
               file.proof.htext=result;
-              addFileToArchive(file);
+              return addFileToArchive(file);
+            })
+            .then(function(){
               loop(i+1);
             })
             .catch(q.reject);
@@ -543,24 +588,39 @@ function _service(
           }
 
           // By default simply add the file to archive
-          addFileToArchive(file);
-          loop(i+1);
-          return;
+          addFileToArchive(file)
+          .then(function(){
+            loop(i+1);
+          })
 
         })(0);
 
         return q.promise.then(function(){
           var q=$q.defer();
+          var prefix;
+          if (config.add_original_file_to_archive) {
+            prefix='merklizer-';
+          } else {
+            prefix='merklizer-proofs-';
+          }
           if (zip) {
             zip.generateAsync({type:"blob"})
-            .then(function(content) {
+            .then(function(blob) {
               service.showOverlay({
                 hideDialog: true
               });
-              FileSaver.saveAs(content, "proofs-"+merkleRoot+".zip");
+              FileSaver.saveAs(blob, prefix+merkleRoot+".zip");
               service.hideOverlay();
               q.resolve(true);
             });
+          } else if (tar) {
+            service.showOverlay({
+              hideDialog: true
+            });
+            var blob=new Blob([tar.buffer],{type: 'application/x-tar'});
+            FileSaver.saveAs(blob, prefix+merkleRoot+".tar");
+            service.hideOverlay();
+            q.resolve(true);
           } else {
             q.resolve(true);
           }
