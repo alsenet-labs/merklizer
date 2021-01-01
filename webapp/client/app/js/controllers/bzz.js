@@ -96,7 +96,7 @@ module.exports=[
                 q.reject(new Error('Could not download '+url));
               } else {
                 link._data={res, body};
-                link.blob=new Blob(body,{type: res.headers['content-type']});
+                link.blob=new Blob([body],{type: res.headers['content-type']});
                 link.objectURL=URL.createObjectURL(link.blob);
                 q.resolve(link);
               }
@@ -121,17 +121,13 @@ module.exports=[
 
           }
 
-          function checkProof(link){
-            link.name=link.Name;
-            var ext=link.name.split('.').pop().toLowerCase();
-            if (ext=="json") {
+          function addProof(link){
               var data=JSON.parse(link._data.body);
               if (data.root && data.hash && data.anchors && data.operations) {
                 link.data=data;
                 $rootScope.$broadcast('addProof',link);
+                return link;
               }
-            }
-            return link;
           }
 
           function hash(link) {
@@ -150,14 +146,22 @@ module.exports=[
 
           return obj.Links.reduce(function(promise,link){
             return promise.then(function(){
+              // download and open file
               return downloadLink(link)
               .then(hash)
-              .then(checkProof)
               .then(function(link){
                 window.open(link.objectURL);
                 return link;
               })
-
+              .then(function(link){
+                // download and open proof
+                return downloadLink({path: link.path+'.json'})
+                .then(addProof)
+                .then(function(link){
+                  window.open(link.objectURL);
+                  return link;
+                })
+              })
             });
           },$q.resolve())
           .then(function(){

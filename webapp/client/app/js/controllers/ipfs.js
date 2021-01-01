@@ -96,7 +96,7 @@ module.exports=[
                 q.reject(new Error('Could not download '+url));
               } else {
                 link._data={res, body};
-                link.blob=new Blob(body,{type: res.headers['content-type']});
+                link.blob=new Blob([body],{type: res.headers['content-type']});
                 link.objectURL=URL.createObjectURL(link.blob);
                 q.resolve(link);
               }
@@ -121,7 +121,7 @@ module.exports=[
 
           }
 
-          function checkProof(link){
+          function checkIsProof(link){
             link.name=link.Name;
             var ext=link.name.split('.').pop().toLowerCase();
             if (ext=="json") {
@@ -129,9 +129,13 @@ module.exports=[
               if (data.root && data.hash && data.anchors && data.operations) {
                 link.data=data;
                 $rootScope.$broadcast('addProof',link);
+                return link;
+              } else {
+                return hash(link);
               }
+            } else {
+              return hash(link);
             }
-            return link;
           }
 
           function hash(link) {
@@ -151,8 +155,7 @@ module.exports=[
           return obj.Links.reduce(function(promise,link){
             return promise.then(function(){
               return downloadLink(link)
-              .then(hash)
-              .then(checkProof)
+              .then(checkIsProof)
               .then(function(link){
                 window.open(link.objectURL);
                 return link;

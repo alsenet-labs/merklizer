@@ -175,10 +175,6 @@ function _service(
         });
       });
 
-      q=q.then(function(){
-        service.downloadArchive(queue,'testing');
-      });
-
       // Ethereum
       if (ethService.enabled) {
 
@@ -462,7 +458,9 @@ function _service(
         var merkleRoot=merkle.getRoot(service.tree);
         var zip;
         var tar;
+        var tape;
         var folder;
+        var index=[];
 
         if (testing) {
           folder={
@@ -486,6 +484,9 @@ function _service(
               tape=new Tar();
               folder={
                 file: function(filename,content){
+                  if ('string' == typeof content) {
+                    content=Buffer.from(content,config.encoding);
+                  }
                   var q=$q.defer();
                   tape.append(filename,new Uint8Array(content),function(_tar){
                     tar=_tar;
@@ -500,6 +501,7 @@ function _service(
 
         function addFileToArchive(file) {
           var q;
+          // add original file
           if (config.add_original_files_to_archive) {
             if (file.buffer) {
               q=$q.resolve(file.buffer);
@@ -509,28 +511,45 @@ function _service(
             q=q.then(function(buf){
               folder.file(file.name,buf);
             })
+
+            // update index
+            if (config.add_index_to_archive){
+              q=q.then(function(){
+                index.push({
+                  path: file.name,
+                  size: file.size
+                });
+              })
+            }
           }
-          var json=JSON.stringify(service.getReadableProof(file.proof,testing),false,2);
+          // add proof
           return q.then(function(){
+            var json=JSON.stringify(service.getReadableProof(file.proof,testing),false,2);
             return folder.file(file.name+'.json',json)
-            .then(function(){
-              if (config.generate_qrcode) {
-                try {
-                  return folder.file(file.name+'.svg',new QRCode(json).svg());
-                } catch(e) {
-                  console.log(e);
-                  if (testing) {
-                    throw new Error('Could not create QRCode for '+file.name+'. ('+e.message+')');
-                  }
+          })
+          // add qrcode
+          .then(function(){
+            if (config.generate_qrcode) {
+              try {
+                return folder.file(file.name+'.svg',new QRCode(json).svg());
+              } catch(e) {
+                console.log(e);
+                if (testing) {
+                  throw new Error('Could not create QRCode for '+file.name+'. ('+e.message+')');
                 }
               }
-            })
+            }
           })
         }
 
         (function loop(i){
           if (i>=queue.length) {
-            q.resolve();
+            if (config.add_index_to_archive){
+              folder.file('index.json',JSON.stringify(index))
+              .then(q.resolve);
+            } else {
+              q.resolve();
+            }
             return
           }
           var file=queue[i];
@@ -598,7 +617,7 @@ function _service(
         return q.promise.then(function(){
           var q=$q.defer();
           var prefix;
-          if (config.add_original_file_to_archive) {
+          if (config.add_original_files_to_archive) {
             prefix='merklizer-';
           } else {
             prefix='merklizer-proofs-';
