@@ -59,6 +59,7 @@ var app=angular.module('merkleApp',[
 //.service('tierion',require('./services/tierion.js'))
 .service('ethService',require('./services/eth.js'))
 .service('btcService',require('./services/btc.js'))
+.service('bzzService',require('./services/bzz.js'))
 //.service('pdfService',require('./services/pdf.js'))
 .directive('onChange',require('./directives/on-change.js'))
 .directive('anchor',require('./directives/anchor.js'))

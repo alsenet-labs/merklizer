@@ -81,7 +81,7 @@ module.exports=[
 
         $scope.$on('processFiles',function(event,queue){
           var action;
-          if ($rootScope.$state.current.name=='validateFile' || $rootScope.$state.current.name=='ipfs') {
+          if ($rootScope.$state.current.name=='validateFile' || $rootScope.$state.current.name=='ipfs' || $scope.$state.current.name=='bzz') {
             action='validate'
           } else {
             action=$rootScope.$state.current.name;
@@ -112,7 +112,7 @@ module.exports=[
           .then(function(result){
             var data=JSON.parse(result);
             if (data.root && data.hash && data.anchors && data.operations) {
-              if ($scope.$state.current.name!='validateFile' && $scope.$state.current.name!='ipfs') {
+              if ($scope.$state.current.name!='validateFile' && $scope.$state.current.name!='ipfs' && $scope.$state.current.name!='bzz') {
                 if (!$scope.tryingToAnchorProofsNotified) {
                   $scope.tryingToAnchorProofsNotified=true;
                   $window.alert('Cannot anchor proofs');
@@ -140,7 +140,7 @@ module.exports=[
               type: 'filesReady'
             }, $window.document.location.origin);
           }
-          if ($scope.$state.current.name=='validateFile' || $scope.$state.current.name=='ipfs') {
+          if ($scope.$state.current.name=='validateFile' || $scope.$state.current.name=='ipfs' || $scope.$state.current.name=='bzz') {
             // associate proofs with files using hash comparison
             $scope.associateProofsWithFiles($scope.proofs,files,function(proof,file){
               return (file.hash_str[proof.data.hashType]==proof.data.hash)
@@ -157,7 +157,7 @@ module.exports=[
             })
             .then(function(proofsPairedCount){
               // validate files automatically when all files have an associated proof
-              if (proofsPairedCount && proofsPairedCount==files.length/2) {
+              if ((proofsPairedCount && proofsPairedCount==files.length/2) || $scope.$state.current.name=='ipfs' || $scope.$state.current.name=='bzz') {
                 $rootScope.$broadcast('processFiles',files);
               }
             })

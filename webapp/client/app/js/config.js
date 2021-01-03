@@ -102,6 +102,12 @@ module.exports=[
       controller: 'IpfsCtrl',
       title: 'Validating'
     })
+    .state('bzz', {
+      url: '/bzz/{path:.*}',
+      templateUrl: 'views/bzz.html',
+      controller: 'BzzCtrl',
+      title: 'Validating'
+    })
 
   }
 ];

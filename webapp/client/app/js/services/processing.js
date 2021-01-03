@@ -47,6 +47,7 @@ if (isAngularJS) {
     'btcService',
     'fileService',
     'FileSaver',
+    'bzzService',
     function(
       $q,
       $rootScope,
@@ -55,7 +56,8 @@ if (isAngularJS) {
       ethService,
       btcService,
       fileService,
-      FileSaver
+      FileSaver,
+      bzzService,
     ) {
       function trigger(event,options){
         return $rootScope.$broadcast(event,options);
@@ -70,7 +72,8 @@ if (isAngularJS) {
         ethService,
         btcService,
         fileService,
-        FileSaver
+        FileSaver,
+        bzzService
       ));
       this.init();
     }
@@ -86,7 +89,8 @@ if (isAngularJS) {
     ethService,
     btcService,
     fileService,
-    FileSaver
+    FileSaver,
+    bzzService
   ) {
     $timeout=$timeout||function $timeout(fn,delay){
       var timeout=setTimeout(fn,delay);
@@ -104,7 +108,8 @@ if (isAngularJS) {
       ethService,
       btcService,
       fileService,
-      FileSaver
+      FileSaver,
+      bzzService
     );
   }
 }
@@ -118,7 +123,8 @@ function _service(
   ethService,
   btcService,
   fileService,
-  FileSaver
+  FileSaver,
+  bzzService
 ) {
   var service;
   return service={
@@ -379,7 +385,30 @@ function _service(
       }
 
       q.then(function(){
-        return service.downloadArchive(queue);
+        return service.buildArchive(queue)
+        .then(function(res){
+          if (res && res.blob && res.filename) {
+            if (config.save_archive) {
+              if (config.ethswarm && config.ethswarm.uploadArchive) {
+                return bzzService.uploadDirectory(res.blob)
+                .then(function(ref){
+                  var filename=res.filename.split('.');
+                  var ext=filename.pop();
+                  filename.push('bzz');
+                  filename.push(ref);
+                  filename.push(ext);
+                  return service.downloadArchive(res.blob,filename.join('.'));
+                })
+                .catch(function(err){
+                  console.log(err);
+                  return service.downloadArchive(res.blob,res.filename);
+                })
+              } else {
+                return service.downloadArchive(res.blob,res.filename);
+              }
+            }
+          }
+        })
       })
       .then(function(success){
         if (success) {
@@ -446,7 +475,7 @@ function _service(
       ];
     }, // getTestingAnchors
 
-    downloadArchive: function downloadArchive(queue,testing){
+    buildArchive: function downloadArchive(queue,testing){
       var q=$q.defer();
 
       service.showOverlay({
@@ -516,7 +545,7 @@ function _service(
             if (config.add_index_to_archive){
               q=q.then(function(){
                 index.push({
-                  path: file.name,
+                  name: file.name,
                   size: file.size
                 });
               })
@@ -545,7 +574,7 @@ function _service(
         (function loop(i){
           if (i>=queue.length) {
             if (config.add_index_to_archive){
-              folder.file('index.json',JSON.stringify(index))
+              folder.file('index.json',JSON.stringify({Links: index}))
               .then(q.resolve);
             } else {
               q.resolve();
@@ -625,21 +654,11 @@ function _service(
           if (zip) {
             zip.generateAsync({type:"blob"})
             .then(function(blob) {
-              service.showOverlay({
-                hideDialog: true
-              });
-              FileSaver.saveAs(blob, prefix+merkleRoot+".zip");
-              service.hideOverlay();
-              q.resolve(true);
+              q.resolve({blob: blob,filename: prefix+merkleRoot+".zip"})
             });
           } else if (tar) {
-            service.showOverlay({
-              hideDialog: true
-            });
             var blob=new Blob([tar.buffer],{type: 'application/x-tar'});
-            FileSaver.saveAs(blob, prefix+merkleRoot+".tar");
-            service.hideOverlay();
-            q.resolve(true);
+            q.resolve({blob: blob,filename: prefix+merkleRoot+".tar"})
           } else {
             q.resolve(true);
           }
@@ -657,6 +676,14 @@ function _service(
       }
       return q.promise;
 
+    }, // buildArchive
+
+    downloadArchive: function(blob,filename) {
+      service.showOverlay({
+        hideDialog: true
+      });
+      FileSaver.saveAs(blob, filename);
+      service.hideOverlay();
     }, // downloadArchive
 
     getTransactionBlock: function(transaction,options){

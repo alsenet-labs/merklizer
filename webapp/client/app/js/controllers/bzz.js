@@ -81,11 +81,11 @@ module.exports=[
 
           function downloadLink(link){
             $scope.showOverlay({
-              message: 'Retrieving '+link.path+' ...',
+              message: 'Retrieving '+link.name+' ...',
               showProgress: true
             });
             var q=$q.defer();
-            var url=$scope.getBzzUrl($scope.$stateParams.path+'/'+link.path);
+            var url=$scope.getBzzUrl($scope.$stateParams.path+'/'+link.name);
             link.url=url;
             var _request=request({
               url: link.url,
@@ -155,7 +155,7 @@ module.exports=[
               })
               .then(function(link){
                 // download and open proof
-                return downloadLink({path: link.path+'.json'})
+                return downloadLink({name: link.name+'.json'})
                 .then(addProof)
                 .then(function(link){
                   window.open(link.objectURL);
@@ -175,7 +175,7 @@ module.exports=[
       }, // init
 
       getBzzUrl: function(path) {
-        return $scope.config.ethswarm.baseUrl+path;
+        return $scope.config.ethswarm.baseUrl+'bzz/'+path;
       }
 
     }); // extend scope
