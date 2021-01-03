@@ -1,6 +1,6 @@
 {
   "name": "merklizer",
-  "version": "1.2.1-beta",
+  "version": "1.3-beta",
   "description": "Web app for computing Merkle trees and anchoring hashes to the open public blockchains",
   "main": "gulpfile.js",
   "scripts": {
