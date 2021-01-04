@@ -52,8 +52,13 @@ module.exports=[
       'Karma'
     ];
 
+    function trigger(event,options){
+      return $rootScope.$broadcast(event,options);
+    }
+
     angular.extend($scope,{
       init: function(){
+        $scope.proofs.length=0;
         $scope.showOverlay({
           message: 'Retrieving directory index...',
           showProgress: true
@@ -75,8 +80,7 @@ module.exports=[
         .then(function downloadAll(obj){
           console.log(JSON.stringify(obj,false,4));
           if (!obj.Links) {
-            q.reject(new Error('Not a anchored directory: '+$scope.$stateParams.path));
-            return;
+            throw new Error('Not an anchored directory: '+$scope.$stateParams.path);
           }
 
           function downloadLink(link){
@@ -119,7 +123,7 @@ module.exports=[
 
             return q.promise;
 
-          }
+          } // downloadLink
 
           function addProof(link){
               var data=JSON.parse(link._data.body);
@@ -170,7 +174,9 @@ module.exports=[
 
         })
         .catch(function(err){
-          console.log(err);
+          $scope.hideOverlay();
+          console.log('Error !',err);
+          trigger('alert', err.message||(err.value&&err.value.message&&err.value.message.split('\n')[0])||'Unexpected error !');
         });
       }, // init
 

@@ -319,7 +319,7 @@ function _service(
               .then(function(receipt){
                 if (!receipt) {
                   console.log('huh');
-                  return $q.resolve();
+                  return;
                 }
                 console.log(JSON.stringify(receipt,false,4));
                 return $q.resolve(receipt)
@@ -504,7 +504,7 @@ function _service(
               zip=new JSZip();
               folder={
                 file: function(filename,content) {
-                  zip.folder(/*merkleRoot*/)(filename,content);
+                  zip.file(filename,content);
                   return $q.resolve();
                 }
               }
@@ -550,6 +550,8 @@ function _service(
                 });
               })
             }
+          } else {
+            q=$q.resolve();
           }
           // add proof
           return q.then(function(){

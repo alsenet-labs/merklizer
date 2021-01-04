@@ -52,8 +52,13 @@ module.exports=[
       'Karma'
     ];
 
+    function trigger(event,options){
+      return $rootScope.$broadcast(event,options);
+    }
+
     angular.extend($scope,{
       init: function(){
+        $scope.proofs.length=0;
         $scope.showOverlay({
           message: 'Retrieving directory...',
           showProgress: true
@@ -169,7 +174,9 @@ module.exports=[
 
         })
         .catch(function(err){
-          console.log(err);
+          $scope.hideOverlay();
+          console.log('Error !',err);
+          trigger('alert', err.message||(err.value&&err.value.message&&err.value.message.split('\n')[0])||'Unexpected error !');
         });
       }, // init
 

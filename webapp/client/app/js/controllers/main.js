@@ -290,6 +290,7 @@ module.exports=[
                       throw new Error('Unexpected error: proof '+proof.name+' matches both '+proof.file.name+' and '+file.name);
                     }
                     file.proof=proof.data;
+                    file._proof={name: proof.name, url: proof.url}; // for report
                     proof.file=file;
                     ++proofsPairedCount;
                     qq.resolve();
