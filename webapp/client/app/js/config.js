@@ -90,7 +90,7 @@ module.exports=[
       templateUrl: 'views/report.html',
       controller: 'ReportCtrl',
       controllerAs: 'report',
-      tile: 'Report',
+      title: 'Report',
       params: {
         files: null,
         proofs: null
@@ -100,13 +100,13 @@ module.exports=[
       url: '/ipfs/{path:.*}',
       templateUrl: 'views/ipfs.html',
       controller: 'IpfsCtrl',
-      title: 'Validating'
+      title: 'ipfs'
     })
     .state('bzz', {
       url: '/bzz/{path:.*}',
       templateUrl: 'views/bzz.html',
       controller: 'BzzCtrl',
-      title: 'Validating'
+      title: 'bzz'
     })
 
   }

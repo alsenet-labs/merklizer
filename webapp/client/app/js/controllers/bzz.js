@@ -58,7 +58,8 @@ module.exports=[
 
     angular.extend($scope,{
       init: function(){
-        $scope.proofs.length=0;
+        if ($scope.queue) $scope.queue.length=0;
+        if ($scope.proofs) $scope.proofs.length=0;
         $scope.showOverlay({
           message: 'Retrieving directory index...',
           showProgress: true
@@ -71,6 +72,9 @@ module.exports=[
             if (err) {
               console.log(err);
               q.reject(new Error('Could not download '+url));
+            } else if (res.statusCode!=200) {
+                console.log(res);
+                q.reject(new Error('Server replied with HTTP status code: '+res.statusCode));
             } else {
               q.resolve($scope.obj=JSON.parse(body));
             }
@@ -92,12 +96,15 @@ module.exports=[
             var url=$scope.getBzzUrl($scope.$stateParams.path+'/'+link.name);
             link.url=url;
             var _request=request({
-              url: link.url,
+              url: url,
               encoding: null
             }, function(err, res, body){
               if (err) {
                 console.log(err);
                 q.reject(new Error('Could not download '+url));
+              } else if (res.statusCode!=200) {
+                  console.log(res);
+                  q.reject(new Error('Server replied with HTTP status code: '+res.statusCode));
               } else {
                 link._data={res, body};
                 link.blob=new Blob([body],{type: res.headers['content-type']});

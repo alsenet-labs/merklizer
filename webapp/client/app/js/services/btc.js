@@ -71,6 +71,9 @@ module.exports=[
           if (err) {
             console.log(err);
             q.reject(err);
+          } else if (res.statusCode!=200) {
+              console.log(res);
+              q.reject(new Error('Server replied with HTTP status code: '+res.statusCode));
           } else {
             console.log(body)
             try {
@@ -90,6 +93,9 @@ module.exports=[
           if (err) {
             console.log(err);
             q.reject(err);
+          } else if (res.statusCode!=200) {
+              console.log(res);
+              q.reject(new Error('Server replied with HTTP status code: '+res.statusCode));
           } else {
             var balance=Number(body);
             console.log(balance);
@@ -219,6 +225,9 @@ module.exports=[
           if (err) {
             console.log(err);
             q.reject(err);
+          } else if (res.statusCode!=200) {
+              console.log(res);
+              q.reject(new Error('Server replied with HTTP status code: '+res.statusCode));
           } else {
             try {
               var obj=JSON.parse(body);
@@ -246,6 +255,9 @@ module.exports=[
           if (err) {
             console.log(err);
             q.reject(err);
+          } else if (res.statusCode!=200) {
+              console.log(res);
+              q.reject(new Error('Server replied with HTTP status code: '+res.statusCode));
           } else {
             try {
               var obj=JSON.parse(body);

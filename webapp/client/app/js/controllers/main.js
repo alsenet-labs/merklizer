@@ -74,7 +74,10 @@ module.exports=[
           switch(transition.to().name) {
             case 'validateFile':
             case 'anchor':
-              $scope.proofs.splice(0);
+            case 'ipfs':
+            case 'bzz':
+              if ($scope.proofs) $scope.proofs.length=0;
+              if ($scope.queue) $scope.queue.length=0;
               break;
           }
         });

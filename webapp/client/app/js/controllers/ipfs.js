@@ -58,7 +58,8 @@ module.exports=[
 
     angular.extend($scope,{
       init: function(){
-        $scope.proofs.length=0;
+        if ($scope.queue) $scope.queue.length=0;
+        if ($scope.proofs) $scope.proofs.length=0;
         $scope.showOverlay({
           message: 'Retrieving directory...',
           showProgress: true
@@ -71,6 +72,9 @@ module.exports=[
             if (err) {
               console.log(err);
               q.reject(new Error('Could not download '+url));
+            } else if (res.statusCode!=200) {
+                console.log(res);
+                q.reject(new Error('Server replied with HTTP status code: '+res.statusCode));
             } else {
               q.resolve($scope.obj=JSON.parse(body));
             }
@@ -80,8 +84,7 @@ module.exports=[
         .then(function downloadAll(obj){
           console.log(JSON.stringify(obj,false,4));
           if (obj.Data!="\u0008\u0001") {
-            q.reject(new Error('Not an IPFS directory: '+$scope.$stateParams.path));
-            return;
+            throw new Error('Not an anchored directory: '+$scope.$stateParams.path);
           }
 
           function downloadLink(link){
@@ -93,12 +96,15 @@ module.exports=[
             var url=$scope.getIpfsUrl('ipfs/'+link.Hash);
             link.url=url;
             var _request=request({
-              url: $scope.getIpfsUrl('ipfs/'+link.Hash),
+              url: url,
               encoding: null
             }, function(err, res, body){
               if (err) {
                 console.log(err);
                 q.reject(new Error('Could not download '+url));
+              } else if (res.statusCode!=200) {
+                  console.log(res);
+                  q.reject(new Error('Server replied with HTTP status code: '+res.statusCode));
               } else {
                 link._data={res, body};
                 link.blob=new Blob([body],{type: res.headers['content-type']});
@@ -124,7 +130,7 @@ module.exports=[
 
             return q.promise;
 
-          }
+          } // downloadLink
 
           function checkIsProof(link){
             link.name=link.Name;
@@ -135,12 +141,9 @@ module.exports=[
                 link.data=data;
                 $rootScope.$broadcast('addProof',link);
                 return link;
-              } else {
-                return hash(link);
               }
-            } else {
-              return hash(link);
             }
+            return hash(link);
           }
 
           function hash(link) {
