@@ -1,8 +1,8 @@
 {
   "encoding": 'utf-8',
-  "add_original_files_to_archive": false,
-  "add_index_to_archive": false,
-  "archive_format": "zip",
+  "add_original_files_to_archive": true,
+  "add_index_to_archive": true,
+  "archive_format": "tar",
   "save_archive": true,
   "include_associated_text_files_in_proof": false,
   "include_standalone_text_files_in_proof": false,
