@@ -1,9 +1,9 @@
 {
   "encoding": 'utf-8',
-  "add_original_files_to_archive": true,
-  "add_index_to_archive": true,
-  "archive_format": "tar",
-  "save_archive": false,
+  "add_original_files_to_archive": false,
+  "add_index_to_archive": false,
+  "archive_format": "zip",
+  "save_archive": true,
   "include_associated_text_files_in_proof": false,
   "include_standalone_text_files_in_proof": false,
   "generate_qrcode": false,
@@ -11,8 +11,8 @@
     "baseUrl": "https://ipfs.io/"
   },
   "ethswarm": {
-    "uploadArchive": true,
+    "uploadArchive": false,
     "uploadEncrypted": false,
-    "baseUrl": "https://185.25.224.202:7070/"
+    "baseUrl": "https://gateway.ethswarm.org/"
   }
 }
