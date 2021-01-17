@@ -13,6 +13,6 @@
   "ethswarm": {
     "uploadArchive": true,
     "uploadEncrypted": false,
-    "baseUrl": "https://185.25.224.202/"
+    "baseUrl": "https://185.25.224.202:7070/"
   }
 }
