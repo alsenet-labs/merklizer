@@ -388,24 +388,26 @@ function _service(
         return service.buildArchive(queue)
         .then(function(res){
           if (res && res.blob && res.filename) {
-            if (config.save_archive) {
-              if (config.ethswarm && config.ethswarm.uploadArchive) {
-                return bzzService.uploadDirectory(res.blob)
-                .then(function(ref){
-                  var filename=res.filename.split('.');
-                  var ext=filename.pop();
-                  filename.push('bzz');
-                  filename.push(ref);
-                  filename.push(ext);
-                  return service.downloadArchive(res.blob,filename.join('.'));
-                })
-                .catch(function(err){
-                  console.log(err);
+            if (config.ethswarm && config.ethswarm.uploadArchive) {
+              return bzzService.uploadDirectory(res.blob)
+              .then(function(ref){
+                var filename=res.filename.split('.');
+                var ext=filename.pop();
+                filename.push('bzz');
+                filename.push(ref);
+                filename.push(ext);
+                return service.downloadArchive(res.blob,filename.join('.'));
+              })
+              .catch(function(err){
+                console.log(err);
+              })
+              .then(function(){
+                if (config.save_archive) {
                   return service.downloadArchive(res.blob,res.filename);
-                })
-              } else {
-                return service.downloadArchive(res.blob,res.filename);
-              }
+                }
+              })
+            } else if (config.save_archive) {
+              return service.downloadArchive(res.blob,res.filename);
             }
           }
         })
@@ -577,7 +579,8 @@ function _service(
           if (i>=queue.length) {
             if (config.add_index_to_archive){
               folder.file('index.json',JSON.stringify({Links: index}))
-              .then(q.resolve);
+              .then(q.resolve)
+              .catch(q.reject)
             } else {
               q.resolve();
             }
