@@ -3,7 +3,7 @@
   "add_original_files_to_archive": true,
   "add_index_to_archive": true,
   "archive_format": "tar",
-  "save_archive": true,
+  "save_archive": false,
   "include_associated_text_files_in_proof": false,
   "include_standalone_text_files_in_proof": false,
   "generate_qrcode": false,
@@ -11,8 +11,8 @@
     "baseUrl": "https://ipfs.io/"
   },
   "ethswarm": {
-    "uploadArchive": false,
+    "uploadArchive": true,
     "uploadEncrypted": false,
-    "baseUrl": "https://gateway.ethswarm.org/"
+    "baseUrl": "https://185.25.224.202/"
   }
 }
