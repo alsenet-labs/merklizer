@@ -67,7 +67,10 @@ module.exports=[
         var q=$q.resolve();
         q.then(function(){
           var q=$q.defer();
-          var url=$scope.getBzzUrl($scope.$stateParams.path+'/index.json');
+          var hash_filename=$scope.$stateParams.path.split('/');
+          $scope.hash=hash_filename[0];
+          $scope.filename=hash_filename[1];
+          var url=$scope.getBzzUrl($scope.hash+'/index.json');
           request(url, function(err, res, body){
             if (err) {
               console.log(err);
@@ -84,7 +87,7 @@ module.exports=[
         .then(function downloadAll(obj){
           console.log(JSON.stringify(obj,false,4));
           if (!obj.Links) {
-            throw new Error('Not an anchored directory: '+$scope.$stateParams.path);
+            throw new Error('Not an anchored directory: '+$scope.hash);
           }
 
           function downloadLink(link){
@@ -93,7 +96,7 @@ module.exports=[
               showProgress: true
             });
             var q=$q.defer();
-            var url=$scope.getBzzUrl($scope.$stateParams.path+'/'+link.name);
+            var url=$scope.getBzzUrl($scope.hash+'/'+link.name);
             link.url=url;
             var _request=request({
               url: url,
@@ -158,24 +161,29 @@ module.exports=[
           return obj.Links.reduce(function(promise,link){
             return promise.then(function(){
               // download and open file
-              return downloadLink(link)
-              .then(hash)
-              .then(function(link){
-                window.open(link.objectURL);
-                return link;
-              })
-              .then(function(link){
-                // download and open proof
-                return downloadLink({name: link.name+'.json'})
-                .then(addProof)
+              if (!$scope.filename || $scope.filename==link.name) {
+                return downloadLink(link)
+                .then(hash)
                 .then(function(link){
                   window.open(link.objectURL);
                   return link;
                 })
-              })
+                .then(function(link){
+                  // download and open proof
+                  return downloadLink({name: link.name+'.json'})
+                  .then(addProof)
+                  .then(function(link){
+                    window.open(link.objectURL);
+                    return link;
+                  })
+                })
+              }
             });
           },$q.resolve())
           .then(function(){
+            if ($scope.filename) {
+              obj.Links=obj.Links.filter(function(l){return l.name==$scope.filename});
+            }
             $rootScope.$broadcast('filesReady',obj.Links);
           })
 

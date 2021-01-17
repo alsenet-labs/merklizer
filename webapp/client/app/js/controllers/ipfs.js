@@ -67,7 +67,10 @@ module.exports=[
         var q=$q.resolve();
         q.then(function(){
           var q=$q.defer();
-          var url=$scope.getIpfsUrl('api/v0/object/get/'+$scope.$stateParams.path);
+          var hash_filename=$scope.$stateParams.path.split('/');
+          $scope.hash=hash_filename[0];
+          $scope.filename=hash_filename[1];
+          var url=$scope.getIpfsUrl('api/v0/object/get/'+$scope.hash);
           request(url, function(err, res, body){
             if (err) {
               console.log(err);
@@ -84,7 +87,7 @@ module.exports=[
         .then(function downloadAll(obj){
           console.log(JSON.stringify(obj,false,4));
           if (obj.Data!="\u0008\u0001") {
-            throw new Error('Not an anchored directory: '+$scope.$stateParams.path);
+            throw new Error('Not an anchored directory: '+$scope.hash);
           }
 
           function downloadLink(link){
@@ -162,19 +165,26 @@ module.exports=[
 
           return obj.Links.reduce(function(promise,link){
             return promise.then(function(){
-              return downloadLink(link)
-              .then(checkIsProof)
-              .then(function(link){
-                window.open(link.objectURL);
-                return link;
-              })
-
-            });
+              if (
+                !$scope.filename || ($scope.filename &&
+                  (link.Name==$scope.filename || link.Name==$scope.filename+'.json')
+                )
+              ) {
+                return downloadLink(link)
+                .then(checkIsProof)
+                .then(function(link){
+                  window.open(link.objectURL);
+                  return link;
+                })
+              }
+            })
           },$q.resolve())
           .then(function(){
+            if ($scope.filename) {
+              obj.Links=obj.Links.filter(function(l){return l.Name==$scope.filename});
+            }
             $rootScope.$broadcast('filesReady',obj.Links);
           })
-
         })
         .catch(function(err){
           $scope.hideOverlay();
