@@ -38,7 +38,7 @@
     "lodash.assign": "^4.2.0",
     "merge-stream": "^1.0.1",
     "run-sequence": "^2.2.1",
-    "shelljs": "^0.8.3",
+    "shelljs": "^0.8.5",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
     "watchify": "^3.9.0"
