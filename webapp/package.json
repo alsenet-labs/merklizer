@@ -20,7 +20,7 @@
     "browserify-css": "^0.14.0",
     "del": "^4.0.0",
     "event-stream": "3.3.4",
-    "express": "^4.15.2",
+    "express": "^4.17.3",
     "fs-extra": "^5.0.0",
     "gulp": "^4.0.0",
     "gulp-browserify": "^0.5.1",
