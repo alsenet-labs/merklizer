@@ -46,7 +46,10 @@ module.exports=[
         2: 'This is the deprecated Morden test network.',
         3: 'This is the ropsten test network.',
         4: 'This is the Rinkeby test network.',
-        42: 'This is the Kovan test network.'
+        5: 'This is the Goerli test network.',
+        42: 'This is the Kovan test network.',
+        11155111: 'This is the Sepolia test network',
+        1337: 'This is the Localhost test network'
       },
 
       network_name: {
@@ -54,6 +57,8 @@ module.exports=[
         2: 'morden',
         3: 'ropsten',
         4: 'rinkeby',
+        5: 'goerly',
+        11155111: 'sepolia',
         42: 'kovan'
       },
 
@@ -61,8 +66,14 @@ module.exports=[
         var q=Q.defer();
         if (typeof web3 != 'undefined') {
           web3.version.getNetwork(function(err,netId) {
-            if (err) q.reject(err);
-            else q.resolve(service.network_name[netId]||netId);
+            if (err) {
+              q.reject(err);
+            } else {
+              if (!service.network_name[netId]) {
+                alert('Network ID '+netId+ ' name is unknown or unsupported. You may report this issue on https://github.com/alsenet-labs/merklizer/issues');
+              }
+              q.resolve(service.network_name[netId]||netId);
+            }
           });
         } else {
           q.resolve();

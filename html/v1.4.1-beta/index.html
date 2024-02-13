@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html ng-app="merkleApp" ng-controller="MainCtrl">
+<head>
+  <title ng-bind="'Merklizer - ' + $root.title">Merklizer</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+  <meta charset="UTF-8">
+  <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/bundle-321b18c01c.css" />
+  <script src="js/index-7ffc2a60e5.min.js"></script>
+</head>
+<body  ng-cloak ng-visible="isLoaded">
+  <ui-view></ui-view>
+  <ng-include src="'views/overlay.html'"></ng-include>
+</body>
+</html>
