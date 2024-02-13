@@ -36,8 +36,8 @@ The actual demo is hashing files using SHA512-trunc, building a Merkle
 tree from those hashes and anchoring the Merkle root on the Bitcoin and
 Ethereum blockchains.
 
-On the Ethereum blockchain (using the [MetaMask browser extension](https://metamask.io/))
-or a local node if available. (We recommend to use the Kovan testing network for the demo (faster)).
+On the Ethereum blockchain (using the web3 version of [MetaMask browser extension](https://metamask.io/))
+or a local node if available.
 
 On the Bitcoin blockchain using a public service (eg: https://blockexplorer.com).
 (Anchoring on Bitcoin testnet is currently disabled for the online demo)
@@ -76,7 +76,8 @@ in user space via nvm)
 
 Download and build with:
 ```
-git clone https://github.com/alsenet-labs/merlizer
+git clone https://github.com/alsenet-labs/merklizer
+git fetch --tags origin master
 cd merklizer
 make
 ```
