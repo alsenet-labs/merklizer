@@ -43,23 +43,13 @@ module.exports=[
 
       network_description: {
         1: 'This is mainnet',
-        2: 'This is the deprecated Morden test network.',
-        3: 'This is the ropsten test network.',
-        4: 'This is the Rinkeby test network.',
-        5: 'This is the Goerli test network.',
-        42: 'This is the Kovan test network.',
-        11155111: 'This is the Sepolia test network',
-        1337: 'This is the Localhost test network'
+        11155111: 'This is the Sepolia test network'
+ //       1337: 'This is the Localhost test network'
       },
 
       network_name: {
         1: 'mainnet',
-        2: 'morden',
-        3: 'ropsten',
-        4: 'rinkeby',
-        5: 'goerly',
-        11155111: 'sepolia',
-        42: 'kovan'
+        11155111: 'sepolia'
       },
 
       getWeb3Network: function() {
@@ -70,7 +60,7 @@ module.exports=[
               q.reject(err);
             } else {
               if (!service.network_name[netId]) {
-                alert('Network ID '+netId+ ' name is unknown or unsupported. You may report this issue on https://github.com/alsenet-labs/merklizer/issues');
+                alert('Network ID '+netId+ ' is unsupported. You may report this issue on https://github.com/alsenet-labs/merklizer/issues');
               }
               q.resolve(service.network_name[netId]||netId);
             }
@@ -129,6 +119,9 @@ module.exports=[
               q.reject(err);
             } else {
               console.log('Local service not found, falling back to public provider');
+              if (!config.publicProvider[network]) {
+                throw new Error('No public provider defined for '+network);
+              }
               eth=service.eth=service._eth[network]=new Eth(new Eth.HttpProvider(config.publicProvider[network]));
               q.resolve();
             }
@@ -142,7 +135,7 @@ module.exports=[
           service.netId=netId;
           console.log(service.network_description[netId]||'This is an unknown network.');
           if (service.network_name[netId]!=network) {
-            throw new Error('You requested to connect on '+network+' but you were connected on '+service.network_name[netId]+' !');
+            throw new Error('You requested to connect on '+network+' but you were connected on '+(service.network_name[netId]||netId)+' !');
           }
         })
         .catch(console.log);

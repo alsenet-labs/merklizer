@@ -30,7 +30,7 @@ module.exports=(function(){
     },
     publicProvider: {
       mainnet: 'https://mainnet.infura.io',
-      kovan: 'https://kovan.infura.io'
+      sepolia: 'https://sepolia.infura.io'
     },
     getTransactionURL: function(network,txid){
       return 'https://'+((network!='mainnet')?network+'.':'')+'etherscan.io/tx/'+txid;
