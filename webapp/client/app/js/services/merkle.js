@@ -73,7 +73,7 @@ function _merkle($q,digest){
   return merkle={
     mask: 0xfffe,
     debug: false,
-    version: '1.0.0',
+    version: '1.1.0',
 
     hashType: 'SHA512_256',
 
@@ -175,31 +175,37 @@ function _merkle($q,digest){
             q.resolve(tree);
             return;
           }
-
-          // even indexes only
-          if (index&1) {
-            loop(index+1);
+          var elem=tree[1][index];
+          // not the last element ?
+          if ((index|1)<tree[1].length) {
+            // merge hash with next node hash
+            merkle.hashMerge(elem.hash,tree[1][index|1].hash)
+            .then(function(hash){
+              tree[0].push({
+                hash: hash
+              });
+              loop(index+2);
+            })
+            .catch(q.reject);
 
           } else {
-            var elem=tree[1][index];
-            // not the last element ?
-            if ((index|1)<tree[1].length) {
-              // merge hashes
-              merkle.hashMerge(elem.hash,tree[1][index|1].hash)
+            // last node without sibling
+            if (index>0) {
+              // we can merge with first node instead
+              merkle.hashMerge(elem.hash,tree[1][0].hash)
               .then(function(hash){
                 tree[0].push({
                   hash: hash
                 });
-                loop(index+1);
+                loop(index+2);
               })
               .catch(q.reject);
-
             } else {
               // nothing to merge, store vanilla hash
               tree[0].push({
                 hash: elem.hash
               });
-              loop(index+1);
+              loop(index+2);
             }
           }
         })(0);
@@ -230,7 +236,7 @@ function _merkle($q,digest){
           operations: []
         }
 
-        for(var level=tree.length-1; level>=0; --level) {
+        for(var level=tree.length-1; level>=1; --level) {
           var here=tree[level];
           if (j&1) {
             // elem index is odd (last bit is 1)
@@ -244,6 +250,13 @@ function _merkle($q,digest){
               elem.proof.operations.push({
                 right: here[j|1].hash
               });
+            } else {
+              // last elem without sibling, pair with first elem
+              if (j>0) {
+                elem.proof.operations.push({
+                  right: here[0].hash
+                });
+              }
             }
           }
           //
