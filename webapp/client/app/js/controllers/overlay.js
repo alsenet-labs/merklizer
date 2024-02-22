@@ -52,12 +52,6 @@ module.exports=[
         $rootScope._showOverlay=false;
 
         $rootScope.$on('showOverlay',function(event,options){
-          if (typeof options == 'string') {
-            options={
-              message: options,
-              showProgress: true
-            };
-          }
           $scope.showOverlay(options);
         });
 
@@ -68,9 +62,10 @@ module.exports=[
       }, // init
 
       showOverlay: function(options) {
-        $scope.message=(options&&options.message)||$scope.message||'Please wait...';
+        options=options||{};
+        $scope.message=options.message||$scope.message||'Please wait...';
         $scope.progress=options.progress;
-        $scope.showProgress=options.showProgress||(options.showProgress!==false && $scope.showProgress);
+        $scope.showProgress=options.showProgress;
         $scope.hideDialog=(options.hideDialog==true);
         $scope.showButton=(options.showButton!=false);
         $scope.buttons=options.buttons;
@@ -78,6 +73,7 @@ module.exports=[
           $scope.onclick=options.onclick||$scope._onclick;
           $scope.buttonText=options.buttonText||'Abort';
         }
+        if (!$rootScope._showOverlay)
         $timeout(function(){
           $rootScope._showOverlay=true;
         });

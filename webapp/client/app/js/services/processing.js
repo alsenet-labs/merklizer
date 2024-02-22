@@ -142,20 +142,28 @@ function _service(
     },
 
     hideOverlay: function(){
+      if (!service.doNotHideOverlay)
       trigger('hideOverlay');
     },
 
     processFiles: function processFiles(action,queue){
+      service.doNotHideOverlay=true;
       service.showOverlay({
         message: 'Processing files...',
         showProgress: true
       });
 
-      switch(action) {
-        case 'anchor':  service.anchorFiles(queue); break;
-        case 'validate': service.validateAll(queue); break;
-        default: throw new Error('unhandled action "'+action+'"'); break;
-      }
+      return new Promise(function (resolve,reject){
+        switch(action) {
+          case 'anchor':  return service.anchorFiles(queue); break;
+          case 'validate': return service.validateAll(queue); break;
+          default: throw new Error('unhandled action "'+action+'"'); break;
+        }
+      })
+      .finally(function() {
+        service.doNotHideOverlay=false;
+        service.hideOverlay();
+      })
     },
 
     anchorFiles: function anchorFiles(queue) {
@@ -384,7 +392,7 @@ function _service(
         });
       }
 
-      q.then(function(){
+      return q.then(function(){
         return service.buildArchive(queue)
         .then(function(res){
           if (res && res.blob && res.filename) {
@@ -429,7 +437,7 @@ function _service(
         service.hideOverlay();
       });
 */
-    }, // processFiles
+    }, // anchorFiles
 
     getReadableProof: function(proof, testing) {
       var dec=new TextDecoder();
@@ -481,7 +489,7 @@ function _service(
       var q=$q.defer();
 
       service.showOverlay({
-        message: 'Build archive...',
+        message: 'Building archive...',
         showProgress: true
       });
 
@@ -692,25 +700,31 @@ function _service(
     }, // downloadArchive
 
     getTransactionBlock: function(transaction,options){
+      options=options||{};
+
       // get block
-      if (transaction.block) {
-        return transaction;
-      } else {
-        if ((options&&options.cache) && service.cached_blocks[transaction.blockHash]) {
+      if (options && options.cache) {
+        if (transaction.block) {
+          return transaction;
+        }
+        if (service.cached_blocks[transaction.blockHash]) {
           transaction.block=service.cached_blocks[transaction.blockHash];
           return transaction;
         }
-
-        return ethService.eth.getBlockByHash(transaction.blockHash,false)
-        .then(function(block){
-          if (options&&options.cache) {
-            service.cached_blocks[block.hash]=block;
-          }
-          transaction.block=block;
-          console.log(JSON.stringify(block,false,4));
-          return transaction;
-        })
+      } else {
+        delete service.cached_blocks[transaction.blockHash];
       }
+
+      return ethService.eth.getBlockByHash(transaction.blockHash,false)
+      .then(function(block){
+        if (options&&options.cache) {
+          service.cached_blocks[block.hash]=block;
+        }
+        transaction.block=block;
+        console.log(JSON.stringify(block,false,4));
+        return transaction;
+      })
+
     },
 
     getBlockDate: function(block) {
@@ -803,12 +817,6 @@ function _service(
       function validateEthereumAnchor(anchor) {
         var q=$q.resolve();
 
-        service.showOverlay({
-          message: 'Retrieving ethereum transaction...',
-          showProgress: true,
-          showButton: true
-        });
-
         return q.then(function() {
           return ethService.init(anchor.networkId);
 
@@ -825,6 +833,14 @@ function _service(
           if (options && options.cache && service.cached_transactions[anchor.transactionId]) {
             return service.cached_transactions[anchor.transactionId];
           } else {
+
+            service.showOverlay({
+              message: 'Retrieving ethereum transaction...',
+              showProgress: true,
+              showButton: true
+            });
+
+            delete service.cached_transactions[anchor.transactionId];
             return ethService.eth.getTransactionByHash(anchor.transactionId)
             .then(function(transaction){
               if (options && options.cache) {
@@ -854,18 +870,18 @@ function _service(
 
           anchor.transaction=transaction;
           return validateAnchor(file, anchor);
-
-
         });
       } // validateEthereumAnchor
 
       function validateAnchor(file, anchor) {
-        service.showOverlay({
-          message: 'Checking Merkle proof...',
-          showProgress: true,
-          showButton: true
-        });
-
+        $timeout(function() {
+          service.showOverlay({
+            message: 'Checking Merkle proof...',
+            showProgress: true,
+            progress: options.progress,
+            showButton: true
+          });
+        })
         // check file hash
         if (file.hash && merkle.hashToString(file.hash[file.proof.hashType])!=file.proof.hash) {
           throw new Error('File hash mismatch !');
@@ -954,11 +970,6 @@ function _service(
         file.proof.validated=validated;
         return validated;
       }).then(function(validated){
-        service.showOverlay({
-          message: '',
-          showProgress: false,
-          showButton: false
-        });
         var q=$q.defer();
         $timeout(function(){
           q.resolve(validated);
@@ -980,8 +991,9 @@ function _service(
 
     validateAll: function(files) {
       var q=$q.defer();
-      var count=0;
       var index=0;
+      service.doNotHideOverlay=true;
+
       (function loop(){
         var file=files&&files[index++];
         if (!file) {
@@ -992,19 +1004,25 @@ function _service(
           loop();
           return;
         }
-        ++count;
         if (file.proof.validated) {
           loop();
           return;
         }
         service.validate(file,{
-          silent: true
+          cache: true,
+          silent: true,
+          progress: {
+            max: files.length,
+            value: index
+          }
         })
         .then(loop);
 
       })();
 
       return q.promise.then(function(){
+        service.doNotHideOverlay=false;
+        service.hideOverlay();
         trigger('filesValidated',files);
       });
 
