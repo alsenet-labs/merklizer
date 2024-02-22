@@ -130,7 +130,11 @@ module.exports=[
       onFilesDropped: function($files, $event) {
         $scope.progress.max=$files.length-1;
         $scope.progress.value=0;
-        $scope.showOverlay('Adding files...');
+        $scope.showOverlay({
+          message: 'Adding files...',
+          showProgress: true,
+          progress: $scope.progress
+        })
         // reuse or initialize total size
         $scope.queue.size=$scope.queue.size||0;
 
@@ -245,7 +249,10 @@ module.exports=[
             file.hashType=hashType;
           })
           .then(loop)
-          .catch(q.reject);
+          .catch(q.reject)
+          .finally(function(){
+            $scope.progress.value++;
+          })
 
         })();
 
